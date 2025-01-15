@@ -9,6 +9,6 @@ TAG=$1
 
 #cp ../scripts/*.java .
 docker build --progress=plain -t fcunial/hapestry_experiments .
-docker tag fcunial/hapestry fcunial/hapestry_experiments:${TAG}
-docker push fcunial/hapestry:${TAG}
+docker tag fcunial/hapestry_experiments fcunial/hapestry_experiments:${TAG}
+docker push fcunial/hapestry_experiments:${TAG}
 #rm -f *.java *.class

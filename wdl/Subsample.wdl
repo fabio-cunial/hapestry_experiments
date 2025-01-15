@@ -70,8 +70,8 @@ task SubsampleImpl {
     parameter_meta {
     }
     
-    String docker_dir = "/hgsvc2"
-    String work_dir = "/cromwell_root/hgsvc2"
+    String docker_dir = "/hapestry"
+    String work_dir = "/cromwell_root/hapestry"
     
     command <<<
         set -euxo pipefail
