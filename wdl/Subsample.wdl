@@ -142,8 +142,13 @@ task SubsampleImpl {
             local COVERAGE=$3
             
             TARGET_N_CHARS=$(( ${COVERAGE} * ${HAPLOID_GENOME_LENGTH_GB} ))
-            PROPORTION=$(( bc <<< "scale=2; ${TARGET_N_CHARS}/${INPUT_FASTQ_N_CHARS}" ))
-            ${TIME_COMMAND} ~{docker_dir}/seqkit sample --proportion ${PROPORTION} -o ~{sample_id}_${COVERAGE}.fastq.gz ${INPUT_FASTQ}
+            if [ ${TARGET_N_CHARS} -ge ${INPUT_FASTQ_N_CHARS} ]; then
+                echo "WARNING: the remote files contain just ${INPUT_FASTQ_N_CHARS} bps in total, but we need ${TARGET_N_CHARS} bps to achieve coverage ${COVERAGE}."
+                ${TIME_COMMAND} pigz --processes ${N_THREADS} --fast --to-stdout ${INPUT_FASTQ} > ~{sample_id}_${COVERAGE}.fastq.gz
+            else
+                PROPORTION=$( bc <<< "scale=2; ${TARGET_N_CHARS}/${INPUT_FASTQ_N_CHARS}" )
+                ${TIME_COMMAND} ~{docker_dir}/seqkit sample --proportion ${PROPORTION} -o ~{sample_id}_${COVERAGE}.fastq.gz ${INPUT_FASTQ}
+            fi
         }
         echo ~{coverages} | tr ',' '\n' > coverages.txt
         while read COVERAGE; do
