@@ -131,7 +131,7 @@ task SubsampleImpl {
         done < randomized.txt
         mkdir ./fastqs
         mv *.fastq ./fastqs
-        ${TIME_COMMAND} ~{docker_dir}/seqkit scat --threads ${N_THREADS} -f --out-format fastq ./fastqs > tmp1.fastq
+        ${TIME_COMMAND} cat ./fastqs/*.fastq > tmp1.fastq
         rm -rf ./fastqs
         df -h
         
