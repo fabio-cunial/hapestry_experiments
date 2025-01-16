@@ -8,15 +8,16 @@ version 1.0
 # Remark: the output FASTQ file for coverage $i+1$ is not necessarily a
 # superset of the output FASTQ file for coverage $i$.
 #
-# Performance on HPRC's HG002. Requested coverages: 8,16,32.
-# 16 physical cores, 128 GB RAM, 2 TB HDD. 
+# Performance on HPRC's HG002. Requested coverages: 4,8,16,32.
+# 16 physical cores, 128 GB RAM, 500 GB HDD. 
 # Total time: 3h 30m
 #
-# STEP                  TIME            CPU            RAM
-# samtools fastq        
-# seqkit stats          
-# seqkit scat           
-# seqkit sample         
+# STEP                  TIME            CPU         RAM
+# samtools fastq        7m              70%         13M
+# seqkit stats          1m              100%        30M
+# seqkit scat           40m             100%        4G
+# cat                   53m             10%         2M
+# seqkit sample         1h              20%         40M
 #
 workflow Subsample {
     input {
