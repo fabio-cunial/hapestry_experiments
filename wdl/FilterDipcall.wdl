@@ -60,8 +60,8 @@ task FilterDipcallImpl {
     >>>
     
     output {
-        Array[File] vcf_gz = glob(work_dir+"dipcall_*.vcf.gz")
-        Array[File] tbi = glob(work_dir+"dipcall_*.vcf.gz.tbi")
+        Array[File] vcf_gz = glob(work_dir+"/dipcall_*.vcf.gz")
+        Array[File] tbi = glob(work_dir+"/dipcall_*.vcf.gz.tbi")
     }
     runtime {
         docker: "fcunial/hapestry_experiments"
