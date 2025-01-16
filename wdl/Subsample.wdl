@@ -132,7 +132,7 @@ task SubsampleImpl {
         mkdir ./fastqs
         mv *.fastq ./fastqs
         ${TIME_COMMAND} cat ./fastqs/*.fastq > tmp1.fastq
-        rm -rf ./fastqs
+        rm -rf ./fastqs/
         df -h
         
         # 2. Subsampling
@@ -154,6 +154,7 @@ task SubsampleImpl {
         while read COVERAGE; do
             sample tmp1.fastq ${TOTAL_N_CHARS} ${COVERAGE} &
         done < coverages.txt
+        wait
         rm -f tmp1.fastq
         
         # 3. Uploading

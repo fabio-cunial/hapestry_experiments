@@ -52,7 +52,8 @@ RUN apt-get -qqy update --fix-missing \
         default-jdk \
         unzip \
         python3-pycurl \
-        python3-edlib
+        python3-edlib \
+        pigz
 
 # GSUTIL
 ARG gcloud_version=405.0.1
