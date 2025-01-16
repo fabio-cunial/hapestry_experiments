@@ -178,3 +178,8 @@ RUN wget https://github.com/shenwei356/seqkit/releases/download/v2.8.2/seqkit_li
 # COPY ./jasmine /opt/conda/envs/jasmine/bin/jasmine
 # SHELL ["chmod", "+x", "/opt/conda/envs/jasmine/bin/jasmine"]
 # SHELL ["/bin/bash", "-c"]
+
+
+# ----------------------------- CUSTOM SCRIPTS ---------------------------------
+COPY *.java .
+RUN javac *.java

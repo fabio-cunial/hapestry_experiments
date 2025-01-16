@@ -13,10 +13,9 @@ version 1.0
 # Total time: 3h 30m
 #
 # STEP                  TIME            CPU         RAM
-# samtools fastq        7m              70%         13M
-# seqkit stats          1m              100%        30M
-# seqkit scat           40m             100%        4G
-# cat                   53m             10%         2M
+# samtools fastq        10m             70%         13M
+# seqkit stats          30s             100%        30M
+# seqkit scat           40m             100%        4G  slightly faster than cat
 # seqkit sample         1h              20%         40M
 #
 workflow Subsample {

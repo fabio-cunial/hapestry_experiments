@@ -5,3 +5,8 @@ workflows:
   publish: True
   primaryDescriptorPath: /wdl/Subsample.wdl
   testParameterFiles:
+- name: FilterDipcall
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/FilterDipcall.wdl
+  testParameterFiles:
