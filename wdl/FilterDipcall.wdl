@@ -64,7 +64,7 @@ task FilterDipcallImpl {
         Array[File] tbi = glob(work_dir+"dipcall_*.vcf.gz.tbi")
     }
     runtime {
-        docker: "fcunial/callset_integration"
+        docker: "fcunial/hapestry_experiments"
         cpu: 1
         memory: ram_size_gb + "GB"
         disks: "local-disk " + disk_size_gb + " HDD"
