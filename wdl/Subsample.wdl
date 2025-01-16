@@ -28,7 +28,7 @@ workflow Subsample {
         Int haploid_genome_length_gb = 3
         Int n_cores = 16
         Int mem_gb = 128
-        Int disk_size_gb = 2000
+        Int disk_size_gb = 500
     }
     parameter_meta {
         bam_addresses: "Can be .bam, .fastq, .fastq.gz"
@@ -112,14 +112,14 @@ task SubsampleImpl {
             fi
             FILE_NAME=$(basename ${ADDRESS})
             if [[ ${FILE_NAME} == *.bam ]]; then
-                ${TIME_COMMAND} samtools fastq -@ ${N_THREADS} -n ${FILE_NAME} > ${FILE_ID}.fastq 
+                ${TIME_COMMAND} samtools fastq -@ ${N_THREADS} -n ${FILE_NAME} > ${FILE_ID}.fastq.gz 
             elif [[ ${FILE_NAME} == *.fastq.gz ]]; then
-                ${TIME_COMMAND} gunzip -c ${FILE_NAME} > ${FILE_ID}.fastq
+                mv ${FILE_NAME} ${FILE_ID}.fastq.gz
             elif [[ ${FILE_NAME} == *.fastq ]]; then
-                mv ${FILE_NAME} ${FILE_ID}.fastq
+                ${TIME_COMMAND} pigz --processes ${N_THREADS} --fast --to-stdout ${FILE_NAME} > ${FILE_ID}.fastq.gz
             fi
             rm -f ${FILE_NAME}
-            ${TIME_COMMAND} ~{docker_dir}/seqkit stats --threads ${N_THREADS} --tabular ${FILE_ID}.fastq > stats.txt
+            ${TIME_COMMAND} ~{docker_dir}/seqkit stats --threads ${N_THREADS} --tabular ${FILE_ID}.fastq.gz > stats.txt
             N_CHARS=$(cut -f 5 stats.txt | tail -n 1)
             TOTAL_N_CHARS=$(( ${TOTAL_N_CHARS} + ${N_CHARS} ))
             N_READS=$(cut -f 4 stats.txt | tail -n 1)
@@ -130,32 +130,32 @@ task SubsampleImpl {
             df -h
         done < randomized.txt
         mkdir ./fastqs
-        mv *.fastq ./fastqs
-        ${TIME_COMMAND} cat ./fastqs/*.fastq > tmp1.fastq
+        mv *.fastq.gz ./fastqs
+        ${TIME_COMMAND} ~{docker_dir}/seqkit scat --threads ${N_THREADS} -f --out-format fastq ./fastqs > tmp1.fastq.gz
         rm -rf ./fastqs/
         df -h
         
         # 2. Subsampling
         function sample() {
-            local INPUT_FASTQ=$1
-            local INPUT_FASTQ_N_CHARS=$2
+            local INPUT_FASTQ_GZ=$1
+            local INPUT_FASTQ_GZ_N_CHARS=$2
             local COVERAGE=$3
             
             TARGET_N_CHARS=$(( ${COVERAGE} * ${HAPLOID_GENOME_LENGTH_GB} ))
-            if [ ${TARGET_N_CHARS} -ge ${INPUT_FASTQ_N_CHARS} ]; then
-                echo "WARNING: the remote files contain just ${INPUT_FASTQ_N_CHARS} bps in total, but we need ${TARGET_N_CHARS} bps to achieve coverage ${COVERAGE}."
-                ${TIME_COMMAND} pigz --processes ${N_THREADS} --fast --to-stdout ${INPUT_FASTQ} > ~{sample_id}_${COVERAGE}.fastq.gz
+            if [ ${TARGET_N_CHARS} -ge ${INPUT_FASTQ_GZ_N_CHARS} ]; then
+                echo "WARNING: the remote files contain just ${INPUT_FASTQ_GZ_N_CHARS} bps in total, but we need ${TARGET_N_CHARS} bps to achieve coverage ${COVERAGE}."
+                cp ${INPUT_FASTQ_GZ} ~{sample_id}_${COVERAGE}.fastq.gz
             else
-                PROPORTION=$( bc <<< "scale=2; ${TARGET_N_CHARS}/${INPUT_FASTQ_N_CHARS}" )
-                ${TIME_COMMAND} ~{docker_dir}/seqkit sample --proportion ${PROPORTION} -o ~{sample_id}_${COVERAGE}.fastq.gz ${INPUT_FASTQ}
+                PROPORTION=$( bc <<< "scale=2; ${TARGET_N_CHARS}/${INPUT_FASTQ_GZ_N_CHARS}" )
+                ${TIME_COMMAND} ~{docker_dir}/seqkit sample --proportion ${PROPORTION} -o ~{sample_id}_${COVERAGE}.fastq.gz ${INPUT_FASTQ_GZ}
             fi
         }
         echo ~{coverages} | tr ',' '\n' > coverages.txt
         while read COVERAGE; do
-            sample tmp1.fastq ${TOTAL_N_CHARS} ${COVERAGE} &
+            sample tmp1.fastq.gz ${TOTAL_N_CHARS} ${COVERAGE} &
         done < coverages.txt
         wait
-        rm -f tmp1.fastq
+        rm -f tmp1.fastq.gz
         
         # 3. Uploading
         while : ; do
