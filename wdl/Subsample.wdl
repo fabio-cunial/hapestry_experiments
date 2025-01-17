@@ -8,33 +8,32 @@ version 1.0
 # Remark: the output FASTQ file for coverage $i+1$ is not necessarily a
 # superset of the output FASTQ file for coverage $i$.
 #
-# Performance on HPRC's HG002. Requested coverages: 4,8,16,32.
-# 16 physical cores, 128 GB RAM, 500 GB HDD. 
-# Total time: 3h 30m
+# Performance on HPRC's HG00621. Requested coverages: 4,8,16,32.
+# 16 physical cores, 128 GB RAM, 500 GB HDD.
 #
 # STEP                  TIME            CPU         RAM
-# samtools fastq        10m             70%         13M
-# seqkit stats          30s             100%        30M
-# seqkit scat           40m             100%        4G  slightly faster than cat
-# seqkit sample         1h              20%         40M
+# samtools fastq        10m             80%         13M
+# seqkit stats          1m              100%        30M
+# seqkit scat           2h              130%        4G
+# total                 6h30m
 #
 workflow Subsample {
     input {
         String sample_id
         Array[String] bam_addresses
-        String coverages
+        String coverages = "4,8,16,32"
         String remote_dir
         String billing_project = "broad-firecloud-dsde-methods"
         Int haploid_genome_length_gb = 3
-        Int n_cores = 16
-        Int mem_gb = 128
+        Int n_cores = 8
+        Int mem_gb = 32
         Int disk_size_gb = 500
     }
     parameter_meta {
         bam_addresses: "Can be .bam, .fastq, .fastq.gz"
-        coverages: "Comma-separated. Example: 4,8,16,32"
+        coverages: "Comma-separated"
         remote_dir: "Output directory in a remote bucket"
-        n_cores: ">=max{4, 2*n_coverages}"
+        n_cores: "At least one per coverage"
     }
     
     call SubsampleImpl {
