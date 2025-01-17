@@ -14,11 +14,11 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/MapCCS.wdl
-- name: VcfdistEvaluation
-  subclass: wdl
-  publish: True
-  primaryDescriptorPath: /wdl/VcfdistEvaluation.wdl
-  testParameterFiles:
+# - name: VcfdistEvaluation
+#   subclass: wdl
+#   publish: True
+#   primaryDescriptorPath: /wdl/VcfdistEvaluation.wdl
+#   testParameterFiles:
 # - name: subset_n_samples_from_vcf
 #   subclass: wdl
 #   publish: True
