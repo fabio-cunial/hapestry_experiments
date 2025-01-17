@@ -1,6 +1,13 @@
 version 1.0
 
 
+# Performance on HG002:
+#
+# COVERAGE  TIME    N_CPUS_IN_MACHINE   RAM_IN_MACHINE  CPU_USAGE_%     MAX_RSS
+# 4x        40m     32                  128             2000%           31G
+# 8x        1h20m   32                  128             2100%           31G
+# 16x       1h40m   64                  128             3700%           43G
+# 32x       2h15m   64                  128             3700%           42G
 #
 workflow MapCCS {
     input {
