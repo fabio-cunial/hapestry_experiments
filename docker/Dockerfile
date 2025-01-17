@@ -121,21 +121,18 @@ RUN wget https://github.com/shenwei356/seqkit/releases/download/v2.8.2/seqkit_li
 
 # ------------------------------- ALIGNMENT ------------------------------------
 
-# # MINIMAP2
-# ARG minimap2_version=2.28
-# RUN wget https://github.com/lh3/minimap2/releases/download/v${minimap2_version}/minimap2-${minimap2_version}_x64-linux.tar.bz2 \
-#     && tar xjf minimap2-${minimap2_version}_x64-linux.tar.bz2 \
-#     && rm -f minimap2-${minimap2_version}_x64-linux.tar.bz2 \
-#     && mv ./minimap2-${minimap2_version}_x64-linux/ ./minimap2/ \
-#     && ./minimap2/minimap2 -h && echo 0 || echo 1
+# MINIMAP2
+ARG minimap2_version=2.28
+RUN wget https://github.com/lh3/minimap2/releases/download/v${minimap2_version}/minimap2-${minimap2_version}_x64-linux.tar.bz2 \
+    && tar xjf minimap2-${minimap2_version}_x64-linux.tar.bz2 \
+    && rm -f minimap2-${minimap2_version}_x64-linux.tar.bz2 \
+    && mv ./minimap2-${minimap2_version}_x64-linux/ ./minimap2/ \
+    && ./minimap2/minimap2 -h && echo 0 || echo 1
 
-
-# # PBMM2
-# ARG pbmm2_version=1.13.0
-# RUN conda install -c bioconda pbmm2=${pbmm2_version} \
-#     && pbmm2 --help
-
-
+# PBMM2
+ARG pbmm2_version=1.16.0
+RUN conda install -c bioconda pbmm2=${pbmm2_version} \
+    && pbmm2 --help
 
 
 # ----------------------------- VARIANT CALLING --------------------------------

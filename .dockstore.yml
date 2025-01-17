@@ -10,3 +10,8 @@ workflows:
   publish: True
   primaryDescriptorPath: /wdl/FilterDipcall.wdl
   testParameterFiles:
+- name: MapCCS
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/MapCCS.wdl
+  testParameterFiles:
