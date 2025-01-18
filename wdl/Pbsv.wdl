@@ -8,7 +8,7 @@ version 1.0
 # 4x discover   6m      100%    1G 
 # 4x call       1h30m   200%    42G
 # 8x discover   12m     100%    2.3G
-# 8x call       ---------> out of ram
+# 8x call       2h30m   250%    44G
 # 16x discover  30m     100%    4.5G
 # 16x call      ---------> out of ram
 # 32x discover  38m     100%    5.5G
@@ -75,17 +75,26 @@ task PbsvImpl {
         TIME_COMMAND="/usr/bin/time --verbose"
         MIN_SVSIG_LENGTH=$(( ~{min_sv_length} - 3 ))  # Arbitrary
 
-        ${TIME_COMMAND} pbsv discover \
-            --ccs \
-            --sample ~{sample_id} \
-            --min-svsig-length ${MIN_SVSIG_LENGTH} \
-            --tandem-repeats ~{tandems_bed} \
-            ~{input_bam} ~{sample_id}.svsig.gz
+        #${TIME_COMMAND} pbsv discover \
+        #    --ccs \
+        #    --sample ~{sample_id} \
+        #    --min-svsig-length ${MIN_SVSIG_LENGTH} \
+        #    --tandem-repeats ~{tandems_bed} \
+        #    ~{input_bam} ~{sample_id}.svsig.gz
+        for REGION in $(samtools view -H ~{input_bam} | grep '^@SQ' | cut -f2 | cut -d ':' -f2); do
+            ${TIME_COMMAND} pbsv discover \
+                --region ${REGION} \
+                --ccs \
+                --sample ~{sample_id} \
+                --min-svsig-length ${MIN_SVSIG_LENGTH} \
+                --tandem-repeats ~{tandems_bed} \
+                ~{input_bam} ~{sample_id}.${REGION}.svsig.gz
+        done
         ${TIME_COMMAND} pbsv call \
             --num-threads ${N_THREADS} \
             --ccs \
             --min-sv-length ~{min_sv_length} \
-            ~{reference_fa} ~{sample_id}.svsig.gz ~{sample_id}.pbsv.vcf
+            ~{reference_fa} *.svsig.gz ~{sample_id}.pbsv.vcf
         bgzip ~{sample_id}.pbsv.vcf
         tabix ~{sample_id}.pbsv.vcf.gz
     >>>
