@@ -5,51 +5,51 @@ version 1.0
 # min_sv_length=10:
 #
 # COVERAGE  TIME    %CPU    RAM
-# 4x        1m      900%    300m
-# 8x        1m      1000%   600m
-# 16x       50m     30%     400m       
-# 32x       1h      30%     400m
+# 4x        
+# 8x       
+# 16x       
+# 32x       
 #
-workflow Sniffles {
+workflow SVision {
     input {
         String sample_id
         File input_bam
         File input_bai
         Int min_sv_length = 10
+        String model_file = "model_liteunet_256_8_16_32_32_32.pth"
+        String access_file = "hg38.access.10M.bed"
         File reference_fa
-        File tandems_bed
         Int n_cores = 16
         Int mem_gb = 32
     }
 
-    call SnifflesImpl {
+    call SVisionImpl {
         input:
             sample_id = sample_id,
             input_bam = input_bam,
             input_bai = input_bai,
             min_sv_length = min_sv_length,
+            model_file = model_file,
+            access_file = access_file,
             reference_fa = reference_fa,
-            tandems_bed = tandems_bed,
             n_cores = n_cores,
             mem_gb = mem_gb
     }
 
     output {
-         File output_vcf_gz = SnifflesImpl.vcf_gz
-         File output_tbi = SnifflesImpl.tbi
-         File output_snf = SnifflesImpl.snf
     }
 }
 
 
-task SnifflesImpl {
+task SVisionImpl {
     input {
         String sample_id
         File input_bam
         File input_bai
         Int min_sv_length
+        String model_file
+        String access_file
         File reference_fa
-        File tandems_bed
         Int n_cores
         Int mem_gb
     }
@@ -70,22 +70,27 @@ task SnifflesImpl {
         N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         TIME_COMMAND="/usr/bin/time --verbose"
 
-        ${TIME_COMMAND} sniffles --threads ${N_THREADS} \
-            --minsvlen ~{min_sv_length} \
-            --input ~{input_bam} \
-            --reference ~{reference_fa} \
-            --tandem-repeats ~{tandems_bed} \
-            --sample-id ~{sample_id} \
-            --vcf ~{sample_id}.sniffles.vcf \
-            --snf ~{sample_id}.sniffles.snf
-        bgzip ~{sample_id}.sniffles.vcf
-        tabix -f ~{sample_id}.sniffles.vcf.gz
+        conda activate svision-pro-env
+        ${TIME_COMMAND} SVision-pro \
+            --device cpu --process_num ${N_THREADS} \
+            --preset hifi \
+            --detect_mode germline \
+            --min_sv_size ~{min_sv_length} \
+            --model_path ~{docker_dir}/svision/src/pre_process/~{model_file} \
+            --access_path ~{docker_dir}/svision/src/pre_process/~{access_file} \
+            --genome_path ~{reference_fa} \
+            --sample_name ~{sample_id} \
+            --target_path ~{input_bam} \
+            --out_path .
+        conda deactivate
+        ls -laht
+        tree
+        #bgzip ~{sample_id}.sniffles.vcf
+        #tabix -f ~{sample_id}.sniffles.vcf.gz
     >>>
 
     output {
-        File vcf_gz = work_dir + "/" + sample_id + ".sniffles.vcf.gz"
-        File tbi = work_dir + "/" + sample_id + ".sniffles.vcf.gz.tbi"
-        File snf = work_dir + "/" + sample_id + ".sniffles.snf"
+        
     }
     runtime {
         docker: "fcunial/hapestry_experiments"

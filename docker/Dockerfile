@@ -147,6 +147,19 @@ ARG pbsv_version=2.10.0
 RUN conda install -c bioconda pbsv=${pbsv_version} \
     && pbsv --help
 
+# SVISION
+ARG svision_version=2.4
+RUN wget https://github.com/songbowang125/SVision-pro/archive/refs/tags/v${svision_version}.tar.gz \
+    && tar xzf v${svision_version}.tar.gz \
+    && rm -f v${svision_version}.tar.gz \
+    && mv ./SVision-pro-2.4/ ./svision/ \
+    && cd ./svision/ \
+    && conda env create -f ./environment.yml
+SHELL ["conda", "run", "-n", "svision-pro-env", "/bin/bash", "-c"]
+RUN cd ./svision/ \
+    && python setup.py install
+
+
 # # CUTESV
 # RUN pip install setuptools==58 scikit-learn \
 #     && git clone https://github.com/tjiangHIT/cuteSV.git \

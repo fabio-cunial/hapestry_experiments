@@ -21,7 +21,11 @@ workflows:
 - name: Pbsv
   subclass: wdl
   publish: True
-  primaryDescriptorPath: /wdl/Pbsv.wdl    
+  primaryDescriptorPath: /wdl/Pbsv.wdl
+- name: SVision
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/SVision.wdl  
 # - name: VcfdistEvaluation
 #   subclass: wdl
 #   publish: True

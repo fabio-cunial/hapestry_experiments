@@ -4,11 +4,15 @@ version 1.0
 # Performance on a machine with 16 cores and 32 GB of RAM, HG002,
 # min_sv_length=10:
 #
-# COVERAGE  TIME    %CPU    RAM
-# 4x        
-# 8x        
-# 16x       
-# 32x
+# COVERAGE      TIME    %CPU    RAM
+# 4x discover   6m      100%    1G 
+# 4x call       1h30m   200%    42G
+# 8x discover   12m     100%    2.3G
+# 8x call       ---------> out of ram
+# 16x discover  30m     100%    4.5G
+# 16x call      ---------> out of ram
+# 32x discover  38m     100%    5.5G
+# 32x call      ---------> out of ram
 #
 workflow Pbsv {
     input {
