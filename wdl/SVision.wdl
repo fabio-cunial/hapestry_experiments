@@ -70,7 +70,7 @@ task SVisionImpl {
         N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         TIME_COMMAND="/usr/bin/time --verbose"
 
-        conda activate svision-pro-env
+        source activate svision-pro-env
         ${TIME_COMMAND} SVision-pro \
             --device cpu --process_num ${N_THREADS} \
             --preset hifi \
