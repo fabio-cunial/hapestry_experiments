@@ -18,6 +18,10 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/Sniffles.wdl  
+- name: Pbsv
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Pbsv.wdl    
 # - name: VcfdistEvaluation
 #   subclass: wdl
 #   publish: True

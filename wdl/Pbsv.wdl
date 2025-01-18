@@ -5,12 +5,12 @@ version 1.0
 # min_sv_length=10:
 #
 # COVERAGE  TIME    %CPU    RAM
-# 4x        1m      900%    300m
-# 8x        1m      1000%   600m
+# 4x        
+# 8x        
 # 16x       
 # 32x
 #
-workflow Sniffles {
+workflow Pbsv {
     input {
         String sample_id
         File input_bam
@@ -22,7 +22,7 @@ workflow Sniffles {
         Int mem_gb = 32
     }
 
-    call SnifflesImpl {
+    call PbsvImpl {
         input:
             sample_id = sample_id,
             input_bam = input_bam,
@@ -35,14 +35,14 @@ workflow Sniffles {
     }
 
     output {
-         File output_vcf_gz = SnifflesImpl.vcf_gz
-         File output_tbi = SnifflesImpl.tbi
-         File output_snf = SnifflesImpl.snf
+         File output_vcf_gz = PbsvImpl.vcf_gz
+         File output_tbi = PbsvImpl.tbi
+         File output_svsig = PbsvImpl.svsig
     }
 }
 
 
-task SnifflesImpl {
+task PbsvImpl {
     input {
         String sample_id
         File input_bam
@@ -69,23 +69,27 @@ task SnifflesImpl {
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
         N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         TIME_COMMAND="/usr/bin/time --verbose"
+        MIN_SVSIG_LENGTH=$(( ~{min_sv_length} - 3 ))  # Arbitrary
 
-        ${TIME_COMMAND} sniffles --threads ${N_THREADS} \
-            --minsvlen ~{min_sv_length} \
-            --input ~{input_bam} \
-            --reference ~{reference_fa} \
+        ${TIME_COMMAND} pbsv discover \
+            --ccs \
+            --sample ~{sample_id} \
+            --min-svsig-length ${MIN_SVSIG_LENGTH} \
             --tandem-repeats ~{tandems_bed} \
-            --sample-id ~{sample_id} \
-            --vcf ~{sample_id}.sniffles.vcf \
-            --snf ~{sample_id}.sniffles.snf
-        bgzip ~{sample_id}.sniffles.vcf
-        tabix -f ~{sample_id}.sniffles.vcf.gz
+            ~{input_bam} ~{sample_id}.svsig.gz
+        ${TIME_COMMAND} pbsv call \
+            --num-threads ${N_THREADS} \
+            --ccs \
+            --min-sv-length ~{min_sv_length} \
+            ~{reference_fa} ~{sample_id}.svsig.gz ~{sample_id}.pbsv.vcf
+        bgzip ~{sample_id}.pbsv.vcf
+        tabix ~{sample_id}.pbsv.vcf.gz
     >>>
 
     output {
-        File vcf_gz = work_dir + "/" + sample_id + ".sniffles.vcf.gz"
-        File tbi = work_dir + "/" + sample_id + ".sniffles.vcf.gz.tbi"
-        File snf = work_dir + "/" + sample_id + ".sniffles.snf"
+        File vcf_gz = work_dir + "/" + sample_id + ".pbsv.vcf.gz"
+        File tbi = work_dir + "/" + sample_id + ".pbsv.vcf.gz.tbi"
+        File svsig = work_dir + "/" + sample_id + ".svsig.gz"
     }
     runtime {
         docker: "fcunial/hapestry_experiments"
