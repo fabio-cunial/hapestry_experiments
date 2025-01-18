@@ -137,15 +137,15 @@ RUN conda install -c bioconda pbmm2=${pbmm2_version} \
 
 # ----------------------------- VARIANT CALLING --------------------------------
 
-# # SNIFFLES
-# ARG sniffles_version=2.2
-# RUN pip3 install sniffles==${sniffles_version} \
-#     && sniffles -h
-#
-# # PBSV
-# ARG pbsv_version=2.9.0
-# RUN conda install -c bioconda pbsv=${pbsv_version} \
-#     && pbsv --help
+# SNIFFLES
+ARG sniffles_version=2.5.3
+RUN pip3 install sniffles==${sniffles_version} \
+    && sniffles -h
+
+# PBSV
+ARG pbsv_version=2.10.0
+RUN conda install -c bioconda pbsv=${pbsv_version} \
+    && pbsv --help
 
 # # CUTESV
 # RUN pip install setuptools==58 scikit-learn \
