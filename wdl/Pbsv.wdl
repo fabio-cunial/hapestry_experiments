@@ -88,8 +88,9 @@ task PbsvImpl {
                 --sample ~{sample_id} \
                 --min-svsig-length ${MIN_SVSIG_LENGTH} \
                 --tandem-repeats ~{tandems_bed} \
-                ~{input_bam} ~{sample_id}.${REGION}.svsig.gz
+                ~{input_bam} ~{sample_id}.${REGION}.svsig.gz &
         done
+        wait
         ${TIME_COMMAND} pbsv call \
             --num-threads ${N_THREADS} \
             --ccs \

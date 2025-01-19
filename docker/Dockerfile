@@ -154,11 +154,12 @@ RUN wget https://github.com/songbowang125/SVision-pro/archive/refs/tags/v${svisi
     && rm -f v${svision_version}.tar.gz \
     && mv ./SVision-pro-2.4/ ./svision/ \
     && cd ./svision/ \
-    && conda env create -f ./environment.yml
+    && conda env create -f ./environment.yml \
+    && conda install mkl
 SHELL ["conda", "run", "-n", "svision-pro-env", "/bin/bash", "-c"]
 RUN cd ./svision/ \
     && python setup.py install
-
+SHELL ["/bin/bash", "-c"]
 
 # # CUTESV
 # RUN pip install setuptools==58 scikit-learn \

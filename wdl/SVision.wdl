@@ -69,7 +69,9 @@ task SVisionImpl {
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
         N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         TIME_COMMAND="/usr/bin/time --verbose"
-
+        MKL_INTERFACE_LAYER="LP64"
+        export MKL_INTERFACE_LAYER
+        
         source activate svision-pro-env
         ${TIME_COMMAND} SVision-pro \
             --device cpu --process_num ${N_THREADS} \
