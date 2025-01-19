@@ -58,7 +58,7 @@ task SVisionImpl {
     parameter_meta {
     }
     
-    Int disk_size_gb = 2*ceil(size(input_bam, "GB")) + ceil(size(reference_fa, "GB")) + 50
+    Int disk_size_gb = 10*ceil(size(input_bam, "GB")) + 10*ceil(size(reference_fa, "GB")) + 100
     String docker_dir = "/hapestry"
     String work_dir = "/cromwell_root/hapestry"
     String svision_suffix = "svision_pro_v2.4.s5"
