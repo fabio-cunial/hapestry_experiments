@@ -37,6 +37,8 @@ workflow SVision {
     }
 
     output {
+        File output_vcf_gz = SVisionImpl.vcf_gz
+        File output_tbi = SVisionImpl.tbi
     }
 }
 
@@ -59,6 +61,7 @@ task SVisionImpl {
     Int disk_size_gb = 2*ceil(size(input_bam, "GB")) + ceil(size(reference_fa, "GB")) + 50
     String docker_dir = "/hapestry"
     String work_dir = "/cromwell_root/hapestry"
+    String svision_suffix = "svision_pro_v2.4.s5"
 
     command <<<
         set -euxo pipefail
@@ -85,14 +88,13 @@ task SVisionImpl {
             --target_path ~{input_bam} \
             --out_path .
         conda deactivate
-        ls -laht
-        tree
-        #bgzip ~{sample_id}.sniffles.vcf
-        #tabix -f ~{sample_id}.sniffles.vcf.gz
+        bgzip ~{sample_id}.~{svision_suffix}.vcf
+        tabix -f ~{sample_id}.~{svision_suffix}.vcf.gz
     >>>
 
     output {
-        
+        File vcf_gz = work_dir + "/" + sample_id + "." + svision_suffix + ".vcf.gz"
+        File tbi = work_dir + "/" + sample_id + "." + svision_suffix + ".vcf.gz.tbi"
     }
     runtime {
         docker: "fcunial/hapestry_experiments"
