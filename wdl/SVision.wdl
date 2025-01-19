@@ -88,7 +88,7 @@ task SVisionImpl {
             --target_path ~{input_bam} \
             --out_path .
         conda deactivate
-        bgzip ~{sample_id}.~{svision_suffix}.vcf
+        bcftools sort --max-mem $(( ~{mem_gb} - 2 )) --output-type z ~{sample_id}.~{svision_suffix}.vcf > ~{sample_id}.~{svision_suffix}.vcf.gz
         tabix -f ~{sample_id}.~{svision_suffix}.vcf.gz
     >>>
 
