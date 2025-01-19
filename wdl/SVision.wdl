@@ -57,8 +57,8 @@ task SVisionImpl {
     }
     
     Int disk_size_gb = 2*ceil(size(input_bam, "GB")) + ceil(size(reference_fa, "GB")) + 50
-    String docker_dir = "/hapestry_experiments"
-    String work_dir = "/cromwell_root/hapestry_experiments"
+    String docker_dir = "/hapestry"
+    String work_dir = "/cromwell_root/hapestry"
 
     command <<<
         set -euxo pipefail
