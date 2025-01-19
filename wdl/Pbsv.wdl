@@ -7,10 +7,13 @@ version 1.0
 # COVERAGE      TIME    %CPU    RAM
 # 4x discover   6m      100%    1G 
 # 4x call       1h30m   200%    42G
+#
 # 8x discover   12m     100%    2.3G
 # 8x call       2h30m   250%    44G
-# 16x discover  30m     100%    4.5G
-# 16x call      ---------> out of ram
+#
+# 16x discover  2m      100%    300m
+# 16x call      3h      300%    50G
+#
 # 32x discover  38m     100%    5.5G
 # 32x call      ---------> out of ram
 #
@@ -41,7 +44,6 @@ workflow Pbsv {
     output {
          File output_vcf_gz = PbsvImpl.vcf_gz
          File output_tbi = PbsvImpl.tbi
-         File output_svsig = PbsvImpl.svsig
     }
 }
 
@@ -61,8 +63,8 @@ task PbsvImpl {
     }
     
     Int disk_size_gb = 2*ceil(size(input_bam, "GB")) + ceil(size(reference_fa, "GB")) + 50
-    String docker_dir = "/hapestry_experiments"
-    String work_dir = "/cromwell_root/hapestry_experiments"
+    String docker_dir = "/hapestry"
+    String work_dir = "/cromwell_root/hapestry"
 
     command <<<
         set -euxo pipefail
@@ -103,7 +105,6 @@ task PbsvImpl {
     output {
         File vcf_gz = work_dir + "/" + sample_id + ".pbsv.vcf.gz"
         File tbi = work_dir + "/" + sample_id + ".pbsv.vcf.gz.tbi"
-        File svsig = work_dir + "/" + sample_id + ".svsig.gz"
     }
     runtime {
         docker: "fcunial/hapestry_experiments"

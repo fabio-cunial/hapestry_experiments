@@ -5,8 +5,8 @@ version 1.0
 # min_sv_length=10:
 #
 # COVERAGE  TIME    %CPU    RAM
-# 4x        
-# 8x       
+# 4x        4m      1500%   400m
+# 8x        
 # 16x       
 # 32x       
 #
