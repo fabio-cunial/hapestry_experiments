@@ -121,34 +121,45 @@ RUN wget https://github.com/shenwei356/seqkit/releases/download/v2.8.2/seqkit_li
 
 # ------------------------------- ALIGNMENT ------------------------------------
 
-# # MINIMAP2
-# ARG minimap2_version=2.28
-# RUN wget https://github.com/lh3/minimap2/releases/download/v${minimap2_version}/minimap2-${minimap2_version}_x64-linux.tar.bz2 \
-#     && tar xjf minimap2-${minimap2_version}_x64-linux.tar.bz2 \
-#     && rm -f minimap2-${minimap2_version}_x64-linux.tar.bz2 \
-#     && mv ./minimap2-${minimap2_version}_x64-linux/ ./minimap2/ \
-#     && ./minimap2/minimap2 -h && echo 0 || echo 1
+# MINIMAP2
+ARG minimap2_version=2.28
+RUN wget https://github.com/lh3/minimap2/releases/download/v${minimap2_version}/minimap2-${minimap2_version}_x64-linux.tar.bz2 \
+    && tar xjf minimap2-${minimap2_version}_x64-linux.tar.bz2 \
+    && rm -f minimap2-${minimap2_version}_x64-linux.tar.bz2 \
+    && mv ./minimap2-${minimap2_version}_x64-linux/ ./minimap2/ \
+    && ./minimap2/minimap2 -h && echo 0 || echo 1
 
-
-# # PBMM2
-# ARG pbmm2_version=1.13.0
-# RUN conda install -c bioconda pbmm2=${pbmm2_version} \
-#     && pbmm2 --help
-
-
+# PBMM2
+ARG pbmm2_version=1.16.0
+RUN conda install -c bioconda pbmm2=${pbmm2_version} \
+    && pbmm2 --help
 
 
 # ----------------------------- VARIANT CALLING --------------------------------
 
-# # SNIFFLES
-# ARG sniffles_version=2.2
-# RUN pip3 install sniffles==${sniffles_version} \
-#     && sniffles -h
-#
-# # PBSV
-# ARG pbsv_version=2.9.0
-# RUN conda install -c bioconda pbsv=${pbsv_version} \
-#     && pbsv --help
+# SNIFFLES
+ARG sniffles_version=2.5.3
+RUN pip3 install sniffles==${sniffles_version} \
+    && sniffles -h
+
+# PBSV
+ARG pbsv_version=2.10.0
+RUN conda install -c bioconda pbsv=${pbsv_version} \
+    && pbsv --help
+
+# SVISION
+ARG svision_version=2.4
+RUN wget https://github.com/songbowang125/SVision-pro/archive/refs/tags/v${svision_version}.tar.gz \
+    && tar xzf v${svision_version}.tar.gz \
+    && rm -f v${svision_version}.tar.gz \
+    && mv ./SVision-pro-2.4/ ./svision/ \
+    && cd ./svision/ \
+    && conda env create -f ./environment.yml \
+    && conda install mkl
+SHELL ["conda", "run", "-n", "svision-pro-env", "/bin/bash", "-c"]
+RUN cd ./svision/ \
+    && python setup.py install
+SHELL ["/bin/bash", "-c"]
 
 # # CUTESV
 # RUN pip install setuptools==58 scikit-learn \

@@ -10,21 +10,37 @@ workflows:
   publish: True
   primaryDescriptorPath: /wdl/FilterDipcall.wdl
   testParameterFiles:
-- name: subset_n_samples_from_vcf
+- name: MapCCS
   subclass: wdl
   publish: True
-  primaryDescriptorPath: /wdl/subset_n_samples_from_vcf.wdl
-- name: subset_csv_samples_using_vcf
+  primaryDescriptorPath: /wdl/MapCCS.wdl
+- name: Sniffles
   subclass: wdl
   publish: True
-  primaryDescriptorPath: /wdl/subset_csv_samples_using_vcf.wdl
-- name: clean_vcf
+  primaryDescriptorPath: /wdl/Sniffles.wdl  
+- name: Pbsv
   subclass: wdl
   publish: True
-  primaryDescriptorPath: /wdl/clean_vcf.wdl
-  testParameterFiles:
-- name: VcfdistEvaluation
+  primaryDescriptorPath: /wdl/Pbsv.wdl
+- name: SVision
   subclass: wdl
   publish: True
-  primaryDescriptorPath: /wdl/VcfdistEvaluation.wdl
-  testParameterFiles:
+  primaryDescriptorPath: /wdl/SVision.wdl  
+# - name: VcfdistEvaluation
+#   subclass: wdl
+#   publish: True
+#   primaryDescriptorPath: /wdl/VcfdistEvaluation.wdl
+#   testParameterFiles:
+# - name: subset_n_samples_from_vcf
+#   subclass: wdl
+#   publish: True
+#   primaryDescriptorPath: /wdl/subset_n_samples_from_vcf.wdl
+# - name: subset_csv_samples_using_vcf
+#   subclass: wdl
+#   publish: True
+#   primaryDescriptorPath: /wdl/subset_csv_samples_using_vcf.wdl
+# - name: clean_vcf
+#   subclass: wdl
+#   publish: True
+#   primaryDescriptorPath: /wdl/clean_vcf.wdl
+#   testParameterFiles:
