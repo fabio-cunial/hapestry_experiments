@@ -168,7 +168,13 @@ SHELL ["/bin/bash", "-c"]
 #     && python setup.py install \
 #     && cuteSV -h
 
-
+# SAWFISH
+ARG sawfish_version=0.12.9
+RUN wget https://github.com/PacificBiosciences/sawfish/releases/download/v0.12.9/sawfish-v${sawfish_version}-x86_64-unknown-linux-gnu.tar.gz \
+    && tar xzf sawfish-v${sawfish_version}-x86_64-unknown-linux-gnu.tar.gz \
+    && rm -f sawfish-v${sawfish_version}-x86_64-unknown-linux-gnu.tar.gz \
+    && mv ./sawfish-v${sawfish_version}-x86_64-unknown-linux-gnu/ ./sawfish/ \
+    && ./sawfish/bin/sawfish --help
 
 # ------------------------------- SV MERGING -----------------------------------
 

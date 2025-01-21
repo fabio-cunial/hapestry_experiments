@@ -25,7 +25,11 @@ workflows:
 - name: SVision
   subclass: wdl
   publish: True
-  primaryDescriptorPath: /wdl/SVision.wdl  
+  primaryDescriptorPath: /wdl/SVision.wdl 
+- name: Sawfish
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Sawfish.wdl  
 # - name: VcfdistEvaluation
 #   subclass: wdl
 #   publish: True
