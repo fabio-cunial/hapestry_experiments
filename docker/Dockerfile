@@ -161,12 +161,14 @@ RUN cd ./svision/ \
     && python setup.py install
 SHELL ["/bin/bash", "-c"]
 
-# # CUTESV
-# RUN pip install setuptools==58 scikit-learn \
-#     && git clone https://github.com/tjiangHIT/cuteSV.git \
-#     && cd cuteSV \
-#     && python setup.py install \
-#     && cuteSV -h
+# CUTESV
+ARG cutesv_version=2.1.1
+RUN wget https://github.com/tjiangHIT/cuteSV/archive/refs/tags/cuteSV-v${cutesv_version}.tar.gz \
+    && tar xzf cuteSV-v${cutesv_version}.tar.gz \
+    && rm -f cuteSV-v${cutesv_version}.tar.gz \
+    && cd cuteSV-cuteSV-v${cutesv_version} \
+    && python setup.py install \
+    && cuteSV -h
 
 # SAWFISH
 ARG sawfish_version=0.12.9
@@ -175,6 +177,9 @@ RUN wget https://github.com/PacificBiosciences/sawfish/releases/download/v0.12.9
     && rm -f sawfish-v${sawfish_version}-x86_64-unknown-linux-gnu.tar.gz \
     && mv ./sawfish-v${sawfish_version}-x86_64-unknown-linux-gnu/ ./sawfish/ \
     && ./sawfish/bin/sawfish --help
+    
+
+    
 
 # ------------------------------- SV MERGING -----------------------------------
 

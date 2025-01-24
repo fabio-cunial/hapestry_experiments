@@ -30,6 +30,10 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/Sawfish.wdl  
+- name: Cutesv
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Cutesv.wdl  
 # - name: VcfdistEvaluation
 #   subclass: wdl
 #   publish: True
