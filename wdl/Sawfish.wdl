@@ -86,14 +86,14 @@ task SawfishImpl {
         else
             CN_FLAG="--expected-cn ~{expected_cn_female}"
         fi
-        ${TIME_COMMAND} sawfish discover \
+        ${TIME_COMMAND} ~{docker_dir}/sawfish/bin/sawfish discover \
             --threads ${N_THREADS} \
             --ref ~{reference_fa} \
             --bam ~{input_bam} \
             --min-indel-size ${MIN_INDEL_SIZE} \
             --output-dir ./sawfish_discover_output
             ${CN_FLAG}
-        ${TIME_COMMAND} sawfish joint-call \
+        ${TIME_COMMAND} ~{docker_dir}/sawfish/bin/sawfish joint-call \
             --threads ${N_THREADS} \
             --sample ./sawfish_discover_output \
             --output-dir ./sawfish_joint_call_dir
