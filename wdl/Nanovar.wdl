@@ -70,6 +70,7 @@ task NanovarImpl {
             --threads ${N_THREADS} \
             --data_type pacbio-ccs \
             --minlen ~{min_sv_length} \
+            --mm ~{docker_dir}/minimap2/minimap2 \
             ~{input_bam} \
             ~{reference_fa} \
             ./working
