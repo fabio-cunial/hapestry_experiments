@@ -34,6 +34,10 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/Cutesv.wdl  
+- name: Nanovar
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Nanovar.wdl  
 # - name: VcfdistEvaluation
 #   subclass: wdl
 #   publish: True

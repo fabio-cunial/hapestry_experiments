@@ -86,6 +86,7 @@ task SawfishImpl {
         else
             CN_FLAG="--expected-cn ~{expected_cn_female}"
         fi
+        export RUST_BACKTRACE="full"
         ${TIME_COMMAND} ~{docker_dir}/sawfish/bin/sawfish discover \
             --threads ${N_THREADS} \
             --ref ~{reference_fa} \

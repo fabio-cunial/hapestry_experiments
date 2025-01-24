@@ -178,7 +178,13 @@ RUN wget https://github.com/PacificBiosciences/sawfish/releases/download/v0.12.9
     && mv ./sawfish-v${sawfish_version}-x86_64-unknown-linux-gnu/ ./sawfish/ \
     && ./sawfish/bin/sawfish --help
     
-
+# NANOVAR
+ARG nanovar_version=1.8.3
+RUN wget https://github.com/benoukraflab/NanoVar/archive/refs/tags/v${nanovar_version}.tar.gz \
+    && tar xzf v${nanovar_version}.tar.gz \
+    && rm -f v${nanovar_version}.tar.gz \
+    && cd NanoVar-${nanovar_version} \
+    && pip install .
     
 
 # ------------------------------- SV MERGING -----------------------------------
