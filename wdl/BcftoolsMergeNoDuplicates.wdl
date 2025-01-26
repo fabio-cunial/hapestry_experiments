@@ -167,9 +167,9 @@ task IntraSampleMerge {
         INPUT_FILES=~{sep=',' sample_vcf_gz}
         INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
         rm -f list.txt
-        i="0"; SAMPLE_ID="";
+        i="0"; SAMPLE_ID="SAMPLE";
         for INPUT_FILE in ${INPUT_FILES}; do
-            if [ -z ${SAMPLE_ID} -o ${SAMPLE_ID} = "NULL" -o ${SAMPLE_ID} = "SAMPLE" ]; then
+            if [ ${SAMPLE_ID} = "SAMPLE" -o ${SAMPLE_ID} = "NULL" ]; then
                 SAMPLE_ID=$(bcftools view --header-only ${INPUT_FILE} | tail -n 1 | cut -f 10)
             fi
             cleanVCF ${INPUT_FILE} ${i}.vcf
