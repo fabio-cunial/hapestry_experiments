@@ -1,10 +1,14 @@
 version 1.0
 
 
-# Resources used when run on a 16-virtual-core, 64-GB machine:
-# [input, time, cost, CPU, RAM]
+# Performance on a machine with 16 cores and 32 GB of RAM, HG002,
+# min_sv_length=10:
 #
-# single-sample HG002 32x CCS     2m  ?   1300%   1G
+# COVERAGE  TIME    %CPU    RAM
+# 4x        31s     1300%   800m
+# 8x        1m40s   700%    850m
+# 16x
+# 32x
 #
 workflow Cutesv {
     input {

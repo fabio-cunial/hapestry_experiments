@@ -186,6 +186,15 @@ RUN wget https://github.com/benoukraflab/NanoVar/archive/refs/tags/v${nanovar_ve
     && cd NanoVar-${nanovar_version} \
     && pip install .
     
+# SVIM
+ARG svim_version=2.0.0
+RUN wget https://github.com/eldariont/svim/archive/refs/tags/v${svim_version}.tar.gz \
+    && tar xzf v${svim_version}.tar.gz \
+    && rm -f v${svim_version}.tar.gz \
+    && cd svim-${svim_version} \
+    && pip install . \
+    && svim --help
+    
 
 # ------------------------------- SV MERGING -----------------------------------
 

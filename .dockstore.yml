@@ -38,6 +38,14 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/Nanovar.wdl  
+- name: Nanovar
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Nanovar.wdl    
+- name: Svim
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Svim.wdl      
 # - name: VcfdistEvaluation
 #   subclass: wdl
 #   publish: True
