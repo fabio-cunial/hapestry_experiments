@@ -7,8 +7,8 @@ version 1.0
 # COVERAGE  TIME    %CPU    RAM
 # 4x        31s     1300%   800m
 # 8x        1m40s   700%    850m
-# 16x
-# 32x
+# 16x       9m14s   200%    900m
+# 32x       11m     200%    980m
 #
 workflow Cutesv {
     input {

@@ -194,7 +194,23 @@ RUN wget https://github.com/eldariont/svim/archive/refs/tags/v${svim_version}.ta
     && cd svim-${svim_version} \
     && pip install . \
     && svim --help
-    
+
+# WTDBG2 (for debreak)
+ARG wtdbg2_version=2.5
+RUN wget https://github.com/ruanjue/wtdbg2/releases/download/v2.5/wtdbg-${wtdbg2_version}_x64_linux.tgz \
+    && tar xzf wtdbg-${wtdbg2_version}_x64_linux.tgz \
+    && rm -f wtdbg-${wtdbg2_version}_x64_linux.tgz \
+    && mv ./wtdbg-${wtdbg2_version}_x64_linux/ ./wtdbg2/ \
+    && ./wtdbg2/wtdbg2 --help
+
+# DEBREAK
+ARG debreak_version=1.2
+RUN wget https://github.com/Maggi-Chen/DeBreak/archive/refs/tags/v${debreak_version}.tar.gz \
+    && tar xzf v${debreak_version}.tar.gz \
+    && rm -f v${debreak_version}.tar.gz \
+    && mv ./DeBreak-${debreak_version}/ ./debreak/ \
+    && ./debreak/debreak --help
+
 
 # ------------------------------- SV MERGING -----------------------------------
 
