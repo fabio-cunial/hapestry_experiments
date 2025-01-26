@@ -144,10 +144,19 @@ task IntraSampleMerge {
             ${TIME_COMMAND} bgzip --threads ${N_THREADS} --compress-level ~{compression_level} tmp2.vcf
             tabix -f tmp2.vcf.gz
             
+            # - Removing INFO/STRAND, to avoid the following error when merging
+            #   e.g. sniffles and cutesv VCFs:
+            #   [W::bcf_hdr_merge] Trying to combine "STRAND" tag definitions of
+            #   different lengths
+            #   Error occurred while processing INFO tag "STRAND" at chr1:...
+            bcftools annotate --remove INFO/STRAND --output-type z tmp2.vcf.gz > tmp3.vcf.gz
+            tabix -f tmp3.vcf.gz
+            rm -f tmp2.vcf.gz*
+            
             # - Removing identical records
             # See <https://github.com/samtools/bcftools/issues/1089>.
-            ${TIME_COMMAND} bcftools norm --threads ${N_THREADS} --rm-dup exact --output-type v tmp2.vcf.gz > ${OUTPUT_VCF}
-            rm -f tmp2.vcf.gz*
+            ${TIME_COMMAND} bcftools norm --threads ${N_THREADS} --rm-dup exact --output-type v tmp3.vcf.gz > ${OUTPUT_VCF}
+            rm -f tmp3.vcf.gz*
             ${TIME_COMMAND} bgzip --threads ${N_THREADS} --compress-level ~{compression_level} ${OUTPUT_VCF}
             tabix -f ${OUTPUT_VCF}.gz
         }
