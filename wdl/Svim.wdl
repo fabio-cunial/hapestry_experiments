@@ -33,7 +33,8 @@ workflow Svim {
     }
 
     output {
-        
+        File vcf_gz = SvimImpl.vcf_gz
+        File tbi = SvimImpl.tbi
     }
 }
 
@@ -80,7 +81,8 @@ task SvimImpl {
     >>>
 
     output {
-        
+        File vcf_gz = work_dir + "/" + sample_id + "." + svim_suffix + ".vcf.gz"
+        File tbi = work_dir + "/" + sample_id + "." + svim_suffix + ".vcf.gz.tbi"
     }
     runtime {
         docker: "fcunial/hapestry_experiments"

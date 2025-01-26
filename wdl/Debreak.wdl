@@ -33,7 +33,8 @@ workflow Debreak {
     }
 
     output {
-        
+        File vcf_gz = DebreakImpl.vcf_gz
+        File tbi = DebreakImpl.tbi
     }
 }
 
@@ -81,7 +82,8 @@ task DebreakImpl {
     >>>
 
     output {
-        
+        File vcf_gz = work_dir + "/" + sample_id + "." + debreak_suffix + ".vcf.gz"
+        File tbi = work_dir + "/" + sample_id + "." + debreak_suffix + ".vcf.gz.tbi"
     }
     runtime {
         docker: "fcunial/hapestry_experiments"
