@@ -59,7 +59,9 @@ workflow BcftoolsMergeNoDuplicates {
 # ALTs. Our script makes sure that only symbolic records with the same SVLEN and
 # END are collapsed into the same record.
 #
-# Remark: we do not consider STRAND in the above.
+# Remark: we do not consider STRAND in the above. STRAND info is removed from
+# the output, since it might be impossible to merge STRAND fields from different
+# callers.
 #
 # Remark: symbolic ALT records in the output VCF are not necessarily identical
 # to the corresponding symbolic ALT records in the input.
@@ -167,7 +169,9 @@ task IntraSampleMerge {
         rm -f list.txt
         i="0"; SAMPLE_ID="";
         for INPUT_FILE in ${INPUT_FILES}; do
-            SAMPLE_ID=$(bcftools view --header-only ${INPUT_FILE} | tail -n 1 | cut -f 10)
+            if [ -z ${SAMPLE_ID} -o ${SAMPLE_ID} = "NULL" -o ${SAMPLE_ID} = "SAMPLE" ]; then
+                SAMPLE_ID=$(bcftools view --header-only ${INPUT_FILE} | tail -n 1 | cut -f 10)
+            fi
             cleanVCF ${INPUT_FILE} ${i}.vcf
             echo ${i}.vcf.gz >> list.txt
             rm -f ${INPUT_FILE}
