@@ -45,7 +45,11 @@ workflows:
 - name: Debreak
   subclass: wdl
   publish: True
-  primaryDescriptorPath: /wdl/Debreak.wdl      
+  primaryDescriptorPath: /wdl/Debreak.wdl    
+- name: BcftoolsMergeNoDuplicates
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/BcftoolsMergeNoDuplicates.wdl  
 # - name: VcfdistEvaluation
 #   subclass: wdl
 #   publish: True
