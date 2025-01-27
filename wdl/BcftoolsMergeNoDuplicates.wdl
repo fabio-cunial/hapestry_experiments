@@ -105,13 +105,18 @@ task IntraSampleMerge {
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
         N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         EFFECTIVE_RAM_GB=$(( ~{ram_gb} - 2 ))
+        REGIONS=""
+        for i in $(seq 1 22) X Y M; do
+            REGIONS="${REGIONS} chr${i}"
+        done
         
         function cleanVCF() {
             local INPUT_VCF_GZ=$1
             local OUTPUT_VCF=$2
             
+            # - Restricting to standard chromosomes
             # - Ensuring that the input file is sorted
-            ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_RAM_GB}G --output-type z ${INPUT_VCF_GZ} > tmp0.vcf.gz
+            ${TIME_COMMAND} bcftools view ${INPUT_VCF_GZ} $(echo ${REGIONS}) | bcftools sort --max-mem ${EFFECTIVE_RAM_GB}G --output-type z > tmp0.vcf.gz
             tabix -f tmp0.vcf.gz
             
             # - Removing multiallelic records.
