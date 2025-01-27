@@ -48,7 +48,9 @@ task BedtoolsMergeDipcallImpl {
         INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
         ${TIME_COMMAND} bedtools multiinter -header -i ${INPUT_FILES} > intersection_stats.bed
         awk '{ if ($4==~{n_files}) printf("%s\t%s\t%s\n",$1,$2,$3); }' intersection_stats.bed > intersection.bed
-        ${TIME_COMMAND} bedtools merge -header -i ${INPUT_FILES} > union.bed
+        cat ${INPUT_FILES} | sort -k1,1 -k2,2n | uniq > all.bed
+        ${TIME_COMMAND} bedtools merge -header -i all.bed > union.bed
+        rm -f all.bed
         ls -laht
     >>>
     
