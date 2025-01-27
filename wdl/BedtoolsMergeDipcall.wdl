@@ -44,7 +44,8 @@ task BedtoolsMergeDipcallImpl {
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
         N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         
-        INPUT_FILES=~{sep=' ' sample_bed}
+        INPUT_FILES=~{sep=',' sample_bed}
+        INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
         ${TIME_COMMAND} bedtools multiinter -header -i ${INPUT_FILES} > intersection_stats.bed
         awk '{ if ($4==~{n_files}) printf("%s\t%s\t%s\n",$1,$2,$3); }' intersection_stats.bed > intersection.bed
         ${TIME_COMMAND} bedtools merge -header -i ${INPUT_FILES} > union.bed
