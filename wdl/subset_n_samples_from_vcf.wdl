@@ -13,7 +13,8 @@ task SubsetNSamples {
     command <<<
         set -euxo pipefail
 
-        bcftools view -Oz -s $(bcftools query -l ~{vcf_gz} | head -n ~{n} | paste -sd, -) ~{vcf_gz} -o first_n_samples.vcf.gz
+        # subset to first n samples and then only keep rows that have at least one non-zero GT (aka AF>0)
+        bcftools view -Oz -s $(bcftools query -l ~{vcf_gz} | head -n ~{n} | paste -sd, -) ~{vcf_gz} | bcftools +fill-tags -- -t AF | bcftools view -i 'AF>0' -Oz -o first_n_samples.vcf.gz
         bcftools index -t --threads 4 first_n_samples.vcf.gz
     >>>
 
