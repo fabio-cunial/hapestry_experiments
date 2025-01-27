@@ -53,26 +53,27 @@ workflows:
 - name: BcftoolsMergeDipcall
   subclass: wdl
   publish: True
-  primaryDescriptorPath: /wdl/BcftoolsMergeDipcall.wdl
-- name: BedtoolsMergeDipcall
+  primaryDescriptorPath: /wdl/BcftoolsMergeDipcall.wdl  
+- name: VcfdistEvaluation
   subclass: wdl
   publish: True
-  primaryDescriptorPath: /wdl/BedtoolsMergeDipcall.wdl
-# - name: VcfdistEvaluation
-#   subclass: wdl
-#   publish: True
-#   primaryDescriptorPath: /wdl/VcfdistEvaluation.wdl
-#   testParameterFiles:
-# - name: subset_n_samples_from_vcf
-#   subclass: wdl
-#   publish: True
-#   primaryDescriptorPath: /wdl/subset_n_samples_from_vcf.wdl
-# - name: subset_csv_samples_using_vcf
-#   subclass: wdl
-#   publish: True
-#   primaryDescriptorPath: /wdl/subset_csv_samples_using_vcf.wdl
-# - name: clean_vcf
-#   subclass: wdl
-#   publish: True
-#   primaryDescriptorPath: /wdl/clean_vcf.wdl
-#   testParameterFiles:
+  primaryDescriptorPath: /wdl/VcfdistEvaluation.wdl
+  testParameterFiles:
+- name: subset_n_samples_from_vcf
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/subset_n_samples_from_vcf.wdl
+- name: subset_csv_samples_using_vcf
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/subset_csv_samples_using_vcf.wdl
+- name: clean_vcf
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/clean_vcf.wdl
+  testParameterFiles:
+- name: fill_vcf_ref_alleles_from_fasta.wdl
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/fill_vcf_ref_alleles_from_fasta.wdl
+  testParameterFiles:
