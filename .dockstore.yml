@@ -72,7 +72,7 @@ workflows:
   publish: True
   primaryDescriptorPath: /wdl/clean_vcf.wdl
   testParameterFiles:
-- name: fill_vcf_ref_alleles_from_fasta.wdl
+- name: fill_vcf_ref_alleles_from_fasta
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/fill_vcf_ref_alleles_from_fasta.wdl
