@@ -110,13 +110,13 @@ RUN wget https://github.com/shenwei356/seqkit/releases/download/v2.8.2/seqkit_li
     && chmod +x seqkit \
     && ./seqkit --help
     
-# # BEDTOOLS
-# ARG bedtools_version=2.31.0
-# RUN wget https://github.com/arq5x/bedtools2/releases/download/v${bedtools_version}/bedtools.static \
-#     && mv bedtools.static bedtools \
-#     && chmod +x bedtools \
-#     && mv bedtools /usr/local/bin \
-#     && bedtools --help
+# BEDTOOLS
+ARG bedtools_version=2.31.1
+RUN wget https://github.com/arq5x/bedtools2/releases/download/v${bedtools_version}/bedtools.static \
+    && mv bedtools.static bedtools \
+    && chmod +x bedtools \
+    && mv bedtools /usr/local/bin \
+    && bedtools --help
 
 
 # ------------------------------- ALIGNMENT ------------------------------------
