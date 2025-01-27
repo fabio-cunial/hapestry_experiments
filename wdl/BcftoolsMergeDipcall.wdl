@@ -6,6 +6,7 @@ workflow BcftoolsMergeDipcall {
     input {
         Array[String] sample_id
         Array[File] sample_vcf_gz
+        Array[File] sample_tbi
         Int ram_gb = 32
     }
     parameter_meta {
@@ -14,7 +15,8 @@ workflow BcftoolsMergeDipcall {
     call BcftoolsMergeDipcallImpl {
         input:
             sample_id = sample_id,
-            input_vcf_gz = sample_vcf_gz,
+            sample_vcf_gz = sample_vcf_gz,
+            sample_tbi = sample_tbi,
             ram_gb = ram_gb
     }
     
@@ -28,7 +30,8 @@ workflow BcftoolsMergeDipcall {
 task BcftoolsMergeDipcallImpl {
     input {
         Array[String] sample_id
-        Array[File] input_vcf_gz
+        Array[File] sample_vcf_gz
+        Array[File] sample_tbi
         Int ram_gb
     }
     parameter_meta {
@@ -36,8 +39,8 @@ task BcftoolsMergeDipcallImpl {
     
     String docker_dir = "/hapestry"
     String work_dir = "/cromwell_root/hapestry"
-    Int disk_size_gb = 10*ceil(size(input_vcf_gz, "GB")) + 100
-    Int n_files = length(input_vcf_gz)
+    Int disk_size_gb = 10*ceil(size(sample_vcf_gz, "GB")) + 100
+    Int n_files = length(sample_vcf_gz)
     
     command <<<
         set -euxo pipefail
@@ -49,7 +52,7 @@ task BcftoolsMergeDipcallImpl {
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
         N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         
-        INPUT_FILES=~{sep=',' input_vcf_gz}
+        INPUT_FILES=~{sep=',' sample_vcf_gz}
         SAMPLE_IDS=~{sep=',' sample_id}
         rm -f list.txt
         for i in $(seq 1 ~{n_files}); do
