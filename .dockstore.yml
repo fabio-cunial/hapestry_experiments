@@ -49,7 +49,11 @@ workflows:
 - name: BcftoolsMergeNoDuplicates
   subclass: wdl
   publish: True
-  primaryDescriptorPath: /wdl/BcftoolsMergeNoDuplicates.wdl  
+  primaryDescriptorPath: /wdl/BcftoolsMergeNoDuplicates.wdl
+- name: BcftoolsMergeDipcall
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/BcftoolsMergeDipcall.wdl  
 # - name: VcfdistEvaluation
 #   subclass: wdl
 #   publish: True
