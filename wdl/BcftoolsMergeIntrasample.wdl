@@ -7,6 +7,7 @@ workflow BcftoolsMergeIntrasample {
         String sample_id
         Array[File] sample_vcf_gz
         Array[File] sample_tbi
+        Int ram_gb = 8
         Int compression_level = 1
     }
     parameter_meta {
@@ -37,6 +38,7 @@ task IntrasampleMerge {
         String sample_id
         Array[File] sample_vcf_gz
         Array[File] sample_tbi
+        Int ram_gb
         Int compression_level
     }
     parameter_meta {
@@ -45,7 +47,6 @@ task IntrasampleMerge {
     Int disk_size_gb = 10*ceil(size(sample_vcf_gz, "GB")) + 10
     String docker_dir = "/hapestry"
     String work_dir = "/cromwell_root/hapestry"
-    Int ram_gb = 4
     Int n_vcfs = length(sample_vcf_gz)
     
     command <<<
