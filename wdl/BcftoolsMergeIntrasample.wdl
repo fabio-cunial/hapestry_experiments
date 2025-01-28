@@ -18,6 +18,7 @@ workflow BcftoolsMergeIntrasample {
             sample_id = sample_id,
             sample_vcf_gz = sample_vcf_gz,
             sample_tbi = sample_tbi,
+            ram_gb = ram_gb,
             compression_level = compression_level
     }
     
