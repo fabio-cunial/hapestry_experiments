@@ -119,7 +119,7 @@ task IntraSampleMerge {
             ${TIME_COMMAND} bcftools view ${INPUT_VCF_GZ} $(echo ${REGIONS}) | bcftools sort --max-mem ${EFFECTIVE_RAM_GB}G --output-type z > tmp0.vcf.gz
             tabix -f tmp0.vcf.gz
             
-            # - Removing multiallelic records.
+            # - Normalizing multiallelic records.
             # - Fixing wrong REF values (which may occur e.g. in sniffles).
             ${TIME_COMMAND} bcftools norm --threads ${N_THREADS} --multiallelics - --check-ref s --fasta-ref ~{reference_fa} --do-not-normalize --output-type z tmp0.vcf.gz > tmp1.vcf.gz
             tabix -f tmp1.vcf.gz

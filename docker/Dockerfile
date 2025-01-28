@@ -214,10 +214,10 @@ RUN wget https://github.com/Maggi-Chen/DeBreak/archive/refs/tags/v${debreak_vers
 
 # ------------------------------- SV MERGING -----------------------------------
 
-# # TRUVARI
-# ARG truvari_version=4.2.2
-# RUN pip3 install truvari==${truvari_version} \
-#     && truvari --help
+# TRUVARI
+ARG truvari_version=5.0.0
+RUN pip3 install truvari==${truvari_version} \
+    && truvari --help
 
 # # MAFFT
 # RUN conda install conda-forge::mafft \
