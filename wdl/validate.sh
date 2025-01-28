@@ -3,6 +3,7 @@
 set -x
 WOMTOOL_PATH="/Users/fcunial/apps/cromwell/womtool-84.jar"
 
+java -jar ${WOMTOOL_PATH} validate -l Resolve.wdl
 java -jar ${WOMTOOL_PATH} validate -l BedtoolsMergeDipcall.wdl
 java -jar ${WOMTOOL_PATH} validate -l BcftoolsMergeDipcall.wdl
 java -jar ${WOMTOOL_PATH} validate -l BcftoolsMergeNoDuplicates.wdl

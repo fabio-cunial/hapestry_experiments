@@ -236,3 +236,4 @@ RUN wget https://github.com/Maggi-Chen/DeBreak/archive/refs/tags/v${debreak_vers
 # ----------------------------- CUSTOM SCRIPTS ---------------------------------
 COPY *.java .
 RUN javac *.java
+COPY *.py .
