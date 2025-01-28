@@ -84,8 +84,9 @@ task IntrasampleMerge {
             for (i=2; i<=8; i++) printf("\t%s",$i); \
             gt="0/1"; \
             for (i=9+1; i<=9+~{n_vcfs}; i++) { \
-                if ($i=="0/1" || $i=="1/0" || $i=="1/1" || $i=="0|1" || $i=="1|0" || $i=="1|1" || $i=="1") { \
-                    gt=$i; \
+                value=substr($i,1,3); \
+                if (value=="0/1" || value=="1/0" || value=="1/1" || value=="0|1" || value=="1|0" || value=="1|1" || value=="1") { \
+                    gt=value; \
                     break; \
                 } \
             } \
