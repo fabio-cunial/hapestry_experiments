@@ -82,7 +82,7 @@ task IntrasampleMerge {
         ${TIME_COMMAND} bcftools view --no-header tmp2.vcf.gz | awk '{ \
             printf("%s",$1); \
             for (i=2; i<=8; i++) printf("\t%s",$i); \
-            gt="0/1" \
+            gt="0/1"; \
             for (i=9+1; i<=9+~{n_vcfs}; i++) { \
                 if ($i=="0/1" || $i=="1/0" || $i=="1/1" || $i=="0|1" || $i=="1|0" || $i=="1|1" || $i=="1") { \
                     gt=$i; \
