@@ -1,10 +1,13 @@
 version 1.0
 
+import "Resolve.wdl" as resolve
+
 
 #
 workflow SnifflesIntersample {
     input {
         Array[File] input_snf
+        File reference_fa
         Int ram_gb
     }
 
@@ -13,10 +16,17 @@ workflow SnifflesIntersample {
             input_snf = input_snf,
             ram_gb = ram_gb
     }
+    call resolve.Resolve as res {
+        input:
+            sample_id = "sniffles_joint",
+            vcf_gz = JointCalling.output_vcf_gz,
+            tbi = JointCalling.output_tbi,
+            reference_fa = reference_fa
+    }
 
     output {
-         File output_vcf_gz = JointCalling.output_vcf_gz
-         File output_tbi = JointCalling.output_tbi
+         File output_vcf_gz = res.resolved_vcf_gz
+         File output_tbi = res.resolved_tbi
     }
 }
 
