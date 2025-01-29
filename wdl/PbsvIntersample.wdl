@@ -73,12 +73,11 @@ task JointCalling {
         done
         for REGION in ${REGIONS}; do
             ${TIME_COMMAND} pbsv call \
-                --num-threads 1 \
+                --num-threads ${N_THREADS} \
                 --ccs \
                 --min-sv-length ~{min_sv_length} \
-                ~{reference_fa} *.${REGION}.svsig.gz ${REGION}.pbsv_joint.vcf &
+                ~{reference_fa} *.${REGION}.svsig.gz ${REGION}.pbsv_joint.vcf
         done
-        wait
         ls *.pbsv_joint.vcf > list.txt
         ${TIME_COMMAND} bcftools concat --threads ${N_THREADS} --file-list list.txt --output-type z > pbsv_joint.vcf.gz
         tabix -f pbsv_joint.vcf.gz
