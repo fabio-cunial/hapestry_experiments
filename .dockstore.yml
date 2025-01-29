@@ -93,3 +93,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/SnifflesIntersample.wdl
+- name: PbsvIntersample
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/PbsvIntersample.wdl

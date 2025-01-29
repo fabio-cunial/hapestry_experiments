@@ -44,7 +44,7 @@ workflow Pbsv {
     output {
          File output_vcf_gz = PbsvImpl.vcf_gz
          File output_tbi = PbsvImpl.tbi
-         Array[File] snfs = PbsvImpl.snfs
+         Array[File] svsig = PbsvImpl.svsig
     }
 }
 
@@ -106,7 +106,7 @@ task PbsvImpl {
     output {
         File vcf_gz = work_dir + "/" + sample_id + ".pbsv.vcf.gz"
         File tbi = work_dir + "/" + sample_id + ".pbsv.vcf.gz.tbi"
-        Array[File] snfs = glob(work_dir+"/*.svsig.gz")
+        Array[File] svsig = glob(work_dir+"/*.svsig.gz")
     }
     runtime {
         docker: "fcunial/hapestry_experiments"
