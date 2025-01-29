@@ -84,4 +84,8 @@ workflows:
 - name: BcftoolsMergeIntrasample
   subclass: wdl
   publish: True
-  primaryDescriptorPath: /wdl/BcftoolsMergeIntrasample.wdl  
+  primaryDescriptorPath: /wdl/BcftoolsMergeIntrasample.wdl
+- name: BcftoolsMergeIntersample
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/BcftoolsMergeIntersample.wdl
