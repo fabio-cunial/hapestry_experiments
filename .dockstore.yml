@@ -89,3 +89,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/BcftoolsMergeIntersample.wdl
+- name: SnifflesIntersample
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/SnifflesIntersample.wdl
