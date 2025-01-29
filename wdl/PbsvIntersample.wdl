@@ -8,7 +8,7 @@ workflow PbsvIntersample {
         Int min_sv_length
         File reference_fa
         Int n_cores = 32
-        Int mem_gb = 64
+        Int mem_gb = 128
     }
 
     call PbsvIntersampleImpl {
@@ -59,7 +59,8 @@ task PbsvIntersampleImpl {
         INPUT_FILES=~{sep=',' svsig}
         INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
         for INPUT_FILE in ${INPUT_FILES}; do
-            mv ${INPUT_FILE} .
+            tabix -f ${INPUT_FILE}
+            mv ${INPUT_FILE}* .
         done
         for REGION in ${REGIONS}; do
             ${TIME_COMMAND} pbsv call \
