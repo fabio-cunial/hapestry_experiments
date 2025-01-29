@@ -5,6 +5,7 @@ version 1.0
 workflow PbsvIntersample {
     input {
         Array[File] svsig
+        Array[File] svsig_tbi
         Int min_sv_length
         File reference_fa
         Int n_cores = 32
@@ -14,6 +15,7 @@ workflow PbsvIntersample {
     call PbsvIntersampleImpl {
         input:
             svsig = svsig,
+            svsig_tbi = svsig_tbi,
             min_sv_length = min_sv_length,
             reference_fa = reference_fa,
             n_cores = n_cores,
@@ -30,6 +32,7 @@ workflow PbsvIntersample {
 task PbsvIntersampleImpl {
     input {
         Array[File] svsig
+        Array[File] svsig_tbi
         Int min_sv_length
         File reference_fa
         Int n_cores
@@ -59,8 +62,12 @@ task PbsvIntersampleImpl {
         INPUT_FILES=~{sep=',' svsig}
         INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
         for INPUT_FILE in ${INPUT_FILES}; do
-            tabix -f ${INPUT_FILE}
-            mv ${INPUT_FILE}* .
+            mv ${INPUT_FILE} .
+        done
+        INPUT_FILES=~{sep=',' svsig_tbi}
+        INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
+        for INPUT_FILE in ${INPUT_FILES}; do
+            mv ${INPUT_FILE} .
         done
         for REGION in ${REGIONS}; do
             ${TIME_COMMAND} pbsv call \
