@@ -1,5 +1,7 @@
 version 1.0
 
+import "Resolve.wdl" as resolve
+
 
 #
 workflow PbsvIntersample {
@@ -11,7 +13,7 @@ workflow PbsvIntersample {
         Int mem_gb = 128
     }
 
-    call PbsvIntersampleImpl {
+    call JointCalling {
         input:
             svsig = svsig,
             min_sv_length = min_sv_length,
@@ -19,15 +21,23 @@ workflow PbsvIntersample {
             n_cores = n_cores,
             mem_gb = mem_gb
     }
+    call resolve.Resolve as res {
+        input:
+            sample_id = "pbsv_joint",
+            vcf_gz = JointCalling.vcf_gz,
+            tbi = JointCalling.tbi,
+            reference_fa = reference_fa
+    }
 
     output {
-         File output_vcf_gz = PbsvIntersampleImpl.vcf_gz
-         File output_tbi = PbsvIntersampleImpl.tbi
+         File output_vcf_gz = res.resolved_vcf_gz
+         File output_tbi = res.resolved_tbi
     }
 }
 
 
-task PbsvIntersampleImpl {
+#
+task JointCalling {
     input {
         Array[File] svsig
         Int min_sv_length
