@@ -25,6 +25,7 @@ workflow Pbsv {
         File tandems_bed
         Int n_cores = 16
         Int mem_gb = 32
+        Int do_call = 1
     }
 
     call PbsvImpl {
@@ -36,12 +37,14 @@ workflow Pbsv {
             reference_fa = reference_fa,
             tandems_bed = tandems_bed,
             n_cores = n_cores,
-            mem_gb = mem_gb
+            mem_gb = mem_gb,
+            do_call = do_call
     }
 
     output {
          File output_vcf_gz = PbsvImpl.vcf_gz
          File output_tbi = PbsvImpl.tbi
+         Array[File] snfs = PbsvImpl.snfs
     }
 }
 
@@ -56,6 +59,7 @@ task PbsvImpl {
         File tandems_bed
         Int n_cores
         Int mem_gb
+        Int do_call
     }
     parameter_meta {
     }
@@ -85,18 +89,24 @@ task PbsvImpl {
                 ~{input_bam} ~{sample_id}.${REGION}.svsig.gz &
         done
         wait
-        ${TIME_COMMAND} pbsv call \
-            --num-threads ${N_THREADS} \
-            --ccs \
-            --min-sv-length ~{min_sv_length} \
-            ~{reference_fa} *.svsig.gz ~{sample_id}.pbsv.vcf
-        bgzip ~{sample_id}.pbsv.vcf
-        tabix ~{sample_id}.pbsv.vcf.gz
+        if [ ~{do_call} -eq 1 ]; then
+            ${TIME_COMMAND} pbsv call \
+                --num-threads ${N_THREADS} \
+                --ccs \
+                --min-sv-length ~{min_sv_length} \
+                ~{reference_fa} *.svsig.gz ~{sample_id}.pbsv.vcf
+            bgzip ~{sample_id}.pbsv.vcf
+            tabix ~{sample_id}.pbsv.vcf.gz
+        else
+            touch ~{sample_id}.pbsv.vcf.gz
+            touch ~{sample_id}.pbsv.vcf.gz.tbi
+        fi
     >>>
 
     output {
         File vcf_gz = work_dir + "/" + sample_id + ".pbsv.vcf.gz"
         File tbi = work_dir + "/" + sample_id + ".pbsv.vcf.gz.tbi"
+        Array[File] snfs = glob(work_dir+"/*.svsig.gz")
     }
     runtime {
         docker: "fcunial/hapestry_experiments"
