@@ -90,6 +90,8 @@ task PbsvImpl {
                 ~{input_bam} ~{sample_id}.${REGION}.svsig.gz &
         done
         wait
+        ls -lah
+        tree
         if [ ~{do_call} -eq 1 ]; then
             ${TIME_COMMAND} pbsv call \
                 --num-threads ${N_THREADS} \
