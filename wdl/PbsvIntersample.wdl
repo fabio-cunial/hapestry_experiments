@@ -79,7 +79,7 @@ task JointCalling {
                 ~{reference_fa} *.${REGION}.svsig.gz ${REGION}.pbsv_joint.vcf
         done
         ls *.pbsv_joint.vcf > list.txt
-        ${TIME_COMMAND} bcftools concat --threads ${N_THREADS} --file-list list.txt --output-type z > pbsv_joint.vcf.gz
+        ${TIME_COMMAND} bcftools concat --threads ${N_THREADS} --allow-overlaps --file-list list.txt --output-type z > pbsv_joint.vcf.gz
         tabix -f pbsv_joint.vcf.gz
     >>>
 
