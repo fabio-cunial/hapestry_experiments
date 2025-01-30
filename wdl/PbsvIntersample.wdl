@@ -116,7 +116,7 @@ task Concat {
     parameter_meta {
     }
     
-    Int disk_size_gb = 2*ceil(size(svsig, "GB")) + ceil(size(reference_fa, "GB")) + 100
+    Int disk_size_gb = 2*ceil(size(vcf_gz, "GB")) + 100
     String docker_dir = "/hapestry"
     String work_dir = "/cromwell_root/hapestry"
 
