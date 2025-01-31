@@ -59,7 +59,8 @@ task TruvariImpl {
         N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         EFFECTIVE_MEM_GB=$(( ~{ram_gb} - 2 ))
 
-        ${TIME_COMMAND} truvari collapse --input ~{bcftools_merge_vcf_gz} ~{truvari_args} | bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G -output-type z > ~{sample_id}.truvari_collapsed.vcf.gz
+        ${TIME_COMMAND} truvari collapse --input ~{bcftools_merge_vcf_gz} ~{truvari_args} --output tmp.vcf
+        ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z tmp.vcf > ~{sample_id}.truvari_collapsed.vcf.gz
         tabix -f ~{sample_id}.truvari_collapsed.vcf.gz
     >>>
     
