@@ -16,7 +16,7 @@ version 1.0
 #
 # In particular, `--gt all` disables merging calls from the same sample, since
 # we assume that intra-sample merging has already been performed. `--pctseq`
-# and `--pctsize` are left to default, as suggested by Adam in AoU.
+# and `--pctsize` are left to default (0.7), as suggested by Adam in AoU.
 #
 # When we do inter-sample truvari on the bcftools merge of all raw calls from
 # all callers, we use:
@@ -25,8 +25,8 @@ version 1.0
 #
 # Once again, we keep `--gt` to default (off) to collapse variants from the
 # same sample, which might come from different callers. `--pctseq` and
-# `--pctsize` are left to default, to mimic the AoU setting above, even though
-# this is a different input VCF.
+# `--pctsize` are left to default (0.7), to mimic the AoU setting above, even
+# though this is a different input VCF.
 #
 workflow Truvari {
     input {

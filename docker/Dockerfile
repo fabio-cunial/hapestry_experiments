@@ -219,6 +219,14 @@ ARG truvari_version=5.0.0
 RUN pip3 install truvari==${truvari_version} \
     && truvari --help
 
+# JASMINE
+ARG jasmine_version=1.1.5
+RUN conda config --add channels bioconda \
+    && conda config --add channels conda-forge \
+    && conda install jasminesv=${jasmine_version}
+
+
+
 # # MAFFT
 # RUN conda install conda-forge::mafft \
 #     && mafft --help || echo "mafft returns an error code when called"
@@ -227,7 +235,7 @@ RUN pip3 install truvari==${truvari_version} \
 # COPY ./jasmine_environment.yml .
 # RUN conda env create -f ./jasmine_environment.yml
 # SHELL ["conda", "run", "-n", "jasmine", "/bin/bash", "-c"]
-# # Adding #!/bin/bash to the original shell script
+# Adding #!/bin/bash to the original shell script
 # COPY ./jasmine /opt/conda/envs/jasmine/bin/jasmine
 # SHELL ["chmod", "+x", "/opt/conda/envs/jasmine/bin/jasmine"]
 # SHELL ["/bin/bash", "-c"]
