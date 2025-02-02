@@ -1,9 +1,32 @@
 version 1.0
 
+# In intra-sample truvari we use:
 #
-# Args used in intra-sample truvari for AoU: "--sizemin 0 --sizemax 1000000 --pctseq 0.90 --pctsize 0.90"
+# --sizemin 0 --sizemax 1000000 --pctseq 0.90 --pctsize 0.90
 #
-# Args used in inter-sample truvari for AoU: "--sizemin 0 --sizemax 1000000 --keep common --gt all" 
+# In particular, we keep `--gt` to default (off), since this allows collapsing
+# variants from the same sample. This is necessary, since the bcftools merge VCF
+# in input contains just one sample column and variants from different callers.
+# `--pctseq` and `--pctsize` are as suggested by Adam in AoU.
+#
+# When we do inter-sample truvari on the VCFs emitted by the intra-sample
+# truvari above, we use:
+#
+# --sizemin 0 --sizemax 1000000 --keep common --gt all
+#
+# In particular, `--gt all` disables merging calls from the same sample, since
+# we assume that intra-sample merging has already been performed. `--pctseq`
+# and `--pctsize` are left to default, as suggested by Adam in AoU.
+#
+# When we do inter-sample truvari on the bcftools merge of all raw calls from
+# all callers, we use:
+#
+# --sizemin 0 --sizemax 1000000 --keep common
+#
+# Once again, we keep `--gt` to default (off) to collapse variants from the
+# same sample, which might come from different callers. `--pctseq` and
+# `--pctsize` are left to default, to mimic the AoU setting above, even though
+# this is a different input VCF.
 #
 workflow Truvari {
     input {
