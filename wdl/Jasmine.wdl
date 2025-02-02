@@ -86,7 +86,7 @@ task JasmineImpl {
         
         gunzip -c ~{bcftools_merge_vcf_gz} > input.vcf
         echo "input.vcf" > list.txt
-        ${TIME_COMMAND} jasmine threads=${N_THREADS} --output_genotypes --ignore_strand --dup_to_ins ~{jasmine_params} file_list=list.txt out_file=~{sample_id}.jasmine.vcf
+        ${TIME_COMMAND} jasmine threads=${N_THREADS} --output_genotypes ~{jasmine_params} file_list=list.txt out_file=~{sample_id}.jasmine.vcf
         ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z ~{sample_id}.jasmine.vcf > ~{sample_id}.jasmine.vcf.gz
         tabix -f ~{sample_id}.jasmine.vcf.gz
     >>>
