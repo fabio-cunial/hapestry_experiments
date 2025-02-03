@@ -70,7 +70,7 @@ task JasmineImpl {
     parameter_meta {
     }
     
-    Int disk_size_gb = 10*ceil(size(bcftools_merge_vcf_gz,"GB"))
+    Int disk_size_gb = 10*ceil(size(bcftools_merge_vcf_gz,"GB")) + 100
     String docker_dir = "/hapestry"
     String work_dir = "/cromwell_root/hapestry"
     
@@ -87,7 +87,7 @@ task JasmineImpl {
         
         gunzip -c ~{bcftools_merge_vcf_gz} > input.vcf
         echo "input.vcf" > list.txt
-        ${TIME_COMMAND} java -cp /opt/conda/bin/jasmine.jar Main threads=${N_THREADS} --output_genotypes ~{jasmine_params} file_list=list.txt out_file=~{sample_id}.jasmine.vcf
+        ${TIME_COMMAND} java -cp /opt/conda/bin/jasmine.jar -Xms${EFFECTIVE_MEM_GB}G -Xmx${EFFECTIVE_MEM_GB}G Main threads=${N_THREADS} --output_genotypes ~{jasmine_params} file_list=list.txt out_file=~{sample_id}.jasmine.vcf
         ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z ~{sample_id}.jasmine.vcf > ~{sample_id}.jasmine.vcf.gz
         tabix -f ~{sample_id}.jasmine.vcf.gz
     >>>
