@@ -152,7 +152,7 @@ task SubsetSampleFromVcf {
             --threads 4 \
             -s ~{sample} \
             -r ~{region} \
-            -Oz -o ~{sample}.subset.g.vcf.gz
+            -Oz | bcftools +fill-tags -- -t AF | bcftools view -i 'AF>0' -Oz -o ~{sample}.subset.g.vcf.gz
 
         bcftools reheader ~{sample}.subset.g.vcf.gz \
             --fai ~{reference_fasta_fai} \
