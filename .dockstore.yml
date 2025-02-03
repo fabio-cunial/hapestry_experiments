@@ -105,4 +105,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/Jasmine.wdl
-  
+- name: JasminePrime
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/JasminePrime.wdl
