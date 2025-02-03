@@ -102,7 +102,7 @@ task JasmineImpl {
         tail -n +$(( ${N_ROWS} + 1 )) tmp2.vcf > body.txt
         rm -f tmp2.vcf
         ${TIME_COMMAND} cat body.txt | awk '{ \
-            pattern="ALLVARS_EXT"; \
+            pattern="IDLIST"; \
             \
             printf("%s",$1); \
             for (i=2; i<8; i++) printf("\t%s",$i); \
