@@ -37,6 +37,7 @@ workflow Jasmine {
         String jasmine_params = " "
         Int n_cpu
         Int ram_gb
+        Int disk_size_gb
     }
     parameter_meta {
     }
@@ -48,7 +49,8 @@ workflow Jasmine {
             bcftools_merge_tbi = bcftools_merge_tbi,
             jasmine_params = jasmine_params,
             n_cpu = n_cpu,
-            ram_gb = ram_gb
+            ram_gb = ram_gb,
+            disk_size_gb = disk_size_gb
     }
     output {
         File output_vcf_gz = JasmineImpl.output_vcf_gz
@@ -66,11 +68,11 @@ task JasmineImpl {
         String jasmine_params
         Int n_cpu
         Int ram_gb
+        Int disk_size_gb
     }
     parameter_meta {
     }
     
-    Int disk_size_gb = 10*ceil(size(bcftools_merge_vcf_gz,"GB")) + 100
     String docker_dir = "/hapestry"
     String work_dir = "/cromwell_root/hapestry"
     
@@ -87,7 +89,10 @@ task JasmineImpl {
         
         gunzip -c ~{bcftools_merge_vcf_gz} > input.vcf
         echo "input.vcf" > list.txt
-        ${TIME_COMMAND} java -cp /opt/conda/bin/jasmine.jar -Xms${EFFECTIVE_MEM_GB}G -Xmx${EFFECTIVE_MEM_GB}G Main threads=${N_THREADS} --output_genotypes ~{jasmine_params} file_list=list.txt out_file=~{sample_id}.jasmine.vcf
+        # Remark: using `--output_genotypes` on the bcftools merge VCF leads to 
+        # a NullPointerException:
+        # at AddGenotypes.addGenotypes(AddGenotypes.java:152).
+        ${TIME_COMMAND} java -cp /opt/conda/bin/jasmine.jar -Xms${EFFECTIVE_MEM_GB}G -Xmx${EFFECTIVE_MEM_GB}G Main threads=${N_THREADS} ~{jasmine_params} file_list=list.txt out_file=~{sample_id}.jasmine.vcf
         ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z ~{sample_id}.jasmine.vcf > ~{sample_id}.jasmine.vcf.gz
         tabix -f ~{sample_id}.jasmine.vcf.gz
     >>>
@@ -99,7 +104,7 @@ task JasmineImpl {
         docker: "fcunial/hapestry_experiments"
         cpu: n_cpu
         memory: ram_gb + "GB"
-        disks: "local-disk " + disk_size_gb + " HDD"
+        disks: "local-disk " + disk_size_gb + " SSD"
         preemptible: 0
     }
 }
