@@ -64,21 +64,20 @@ workflow VcfdistEvaluation {
         String? vcfdist_extra_args
     }
 
-    # First clean the vcf
-    call clean_vcf.CleanVcfAlleles as clean{
-        input:
-            vcf_gz = eval_vcf,
-            ref_fasta = reference_fasta
-    }
-
     scatter (sample in samples) {
 
         call SubsetSampleFromVcf as SubsetSampleFromVcfEval { input:
-            vcf = clean.output_vcf_gz,
-            vcf_tbi = clean.output_vcf_tbi,
+            vcf = eval_vcf,
+            vcf_tbi = eval_vcf_tbi,
             sample = sample,
             region = region,
             reference_fasta_fai = reference_fasta_fai
+        }
+
+        # Clean the single-sample VCF (don't do this in first step because VCF too big)
+        call clean_vcf.CleanVcfAlleles as clean { input:
+            vcf_gz = SubsetSampleFromVcfEval.single_sample_vcf,
+            ref_fasta = reference_fasta
         }
 
         call SubsetSampleFromVcf as SubsetSampleFromVcfTruth { input:
@@ -91,7 +90,7 @@ workflow VcfdistEvaluation {
 
         call Vcfdist as vcfdist { input:
             sample = sample,
-            eval_vcf = SubsetSampleFromVcfEval.single_sample_vcf,
+            eval_vcf = clean.output_vcf_gz,
             truth_vcf = SubsetSampleFromVcfTruth.single_sample_vcf,
             bed_file = vcfdist_bed_file,
             reference_fasta = reference_fasta,
@@ -167,7 +166,7 @@ task SubsetSampleFromVcf {
     }
 
     runtime {
-        cpu: 4
+        cpu: 16
         memory: "64 GiB"
         disks: "local-disk " + disk_size + " SSD"
         bootDiskSizeGb: 10
