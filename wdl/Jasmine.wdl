@@ -88,12 +88,18 @@ task JasmineImpl {
         EFFECTIVE_MEM_GB=$(( ~{ram_gb} - 2 ))
         JAVA_PATH="/usr/bin/java"
         
-        gunzip -c ~{bcftools_merge_vcf_gz} > input.vcf
+        # - Making all DELs and INVs symbolic to speed up Jasmine
+        gunzip -c ~{bcftools_merge_vcf_gz} > tmp1.vcf
+        python ~{docker_dir}/symbolic_jasmine.py tmp1.vcf > input.vcf
+        rm -f tmp1.vcf
         echo "input.vcf" > list.txt
-        # Remark: using `--output_genotypes` on the bcftools merge VCF leads to 
-        # a NullPointerException:
+        
+        # - Using `--output_genotypes` on a bcftools merge VCF with only one
+        # sample leads to a NullPointerException:
         # at AddGenotypes.addGenotypes(AddGenotypes.java:152).
         ${TIME_COMMAND} ${JAVA_PATH} -jar /opt/conda/bin/jasmine.jar -Xms${EFFECTIVE_MEM_GB}G -Xmx${EFFECTIVE_MEM_GB}G threads=${N_THREADS} ~{jasmine_params} file_list=list.txt out_file=~{sample_id}.jasmine.vcf
+        
+        # - Outputting
         ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z ~{sample_id}.jasmine.vcf > ~{sample_id}.jasmine.vcf.gz
         tabix -f ~{sample_id}.jasmine.vcf.gz
     >>>
