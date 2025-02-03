@@ -78,8 +78,6 @@ task JasmineImpl {
         TIME_COMMAND="/usr/bin/time --verbose"
         EFFECTIVE_MEM_GB=$(( ~{ram_gb} - 2 ))
         JAVA_PATH="/usr/bin/java"  # Using the latest JRE
-        
-
 
         INPUT_FILES=~{sep=',' input_vcf_gz}
         INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
@@ -90,7 +88,12 @@ task JasmineImpl {
             gunzip -c ${INPUT_FILE} > ${i}.vcf
             echo ${i}.vcf >> list.txt
         done
-        ${TIME_COMMAND} ${JAVA_PATH} -jar /opt/conda/bin/jasmine.jar -Xms${EFFECTIVE_MEM_GB}G -Xmx${EFFECTIVE_MEM_GB}G threads=${N_THREADS} --output_genotypes ~{jasmine_params} file_list=list.txt out_file=tmp2.vcf
+        
+        # - Using `--output_genotypes` gives again a NullPointerException:
+        #   Cannot invoke "java.lang.Integer.intValue()" because the return
+        #   value of "java.util.HashMap.get(Object)" is null
+	    #   at AddGenotypes.addGenotypes(AddGenotypes.java:152)
+        ${TIME_COMMAND} ${JAVA_PATH} -jar /opt/conda/bin/jasmine.jar -Xms${EFFECTIVE_MEM_GB}G -Xmx${EFFECTIVE_MEM_GB}G threads=${N_THREADS} ~{jasmine_params} file_list=list.txt out_file=tmp2.vcf
         
         # - Removing a suffix of the INFO field added by Jasmine, since it makes
         #   bcftools sort crash.
