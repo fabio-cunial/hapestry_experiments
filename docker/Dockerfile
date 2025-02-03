@@ -48,8 +48,8 @@ RUN apt-get -qqy update --fix-missing \
         tk-dev \
         python-dev \
         bsdmainutils \
-        default-jre \
-        default-jdk \
+        openjdk-17-jdk \
+        openjdk-17-jre \
         unzip \
         python3-pycurl \
         python3-edlib \
@@ -147,20 +147,6 @@ ARG pbsv_version=2.10.0
 RUN conda install -c bioconda pbsv=${pbsv_version} \
     && pbsv --help
 
-# SVISION
-ARG svision_version=2.4
-RUN wget https://github.com/songbowang125/SVision-pro/archive/refs/tags/v${svision_version}.tar.gz \
-    && tar xzf v${svision_version}.tar.gz \
-    && rm -f v${svision_version}.tar.gz \
-    && mv ./SVision-pro-2.4/ ./svision/ \
-    && cd ./svision/ \
-    && conda env create -f ./environment.yml \
-    && conda install mkl
-SHELL ["conda", "run", "-n", "svision-pro-env", "/bin/bash", "-c"]
-RUN cd ./svision/ \
-    && python setup.py install
-SHELL ["/bin/bash", "-c"]
-
 # CUTESV
 ARG cutesv_version=2.1.1
 RUN wget https://github.com/tjiangHIT/cuteSV/archive/refs/tags/cuteSV-v${cutesv_version}.tar.gz \
@@ -170,46 +156,60 @@ RUN wget https://github.com/tjiangHIT/cuteSV/archive/refs/tags/cuteSV-v${cutesv_
     && python setup.py install \
     && cuteSV -h
 
-# SAWFISH
-ARG sawfish_version=0.12.9
-RUN wget https://github.com/PacificBiosciences/sawfish/releases/download/v0.12.9/sawfish-v${sawfish_version}-x86_64-unknown-linux-gnu.tar.gz \
-    && tar xzf sawfish-v${sawfish_version}-x86_64-unknown-linux-gnu.tar.gz \
-    && rm -f sawfish-v${sawfish_version}-x86_64-unknown-linux-gnu.tar.gz \
-    && mv ./sawfish-v${sawfish_version}-x86_64-unknown-linux-gnu/ ./sawfish/ \
-    && ./sawfish/bin/sawfish --help
-    
-# NANOVAR
-ARG nanovar_version=1.8.3
-RUN wget https://github.com/benoukraflab/NanoVar/archive/refs/tags/v${nanovar_version}.tar.gz \
-    && tar xzf v${nanovar_version}.tar.gz \
-    && rm -f v${nanovar_version}.tar.gz \
-    && cd NanoVar-${nanovar_version} \
-    && pip install .
-    
-# SVIM
-ARG svim_version=2.0.0
-RUN wget https://github.com/eldariont/svim/archive/refs/tags/v${svim_version}.tar.gz \
-    && tar xzf v${svim_version}.tar.gz \
-    && rm -f v${svim_version}.tar.gz \
-    && cd svim-${svim_version} \
-    && pip install . \
-    && svim --help
+# # SVISION
+# ARG svision_version=2.4
+# RUN wget https://github.com/songbowang125/SVision-pro/archive/refs/tags/v${svision_version}.tar.gz \
+#     && tar xzf v${svision_version}.tar.gz \
+#     && rm -f v${svision_version}.tar.gz \
+#     && mv ./SVision-pro-2.4/ ./svision/ \
+#     && cd ./svision/ \
+#     && conda env create -f ./environment.yml \
+#     && conda install mkl
+# SHELL ["conda", "run", "-n", "svision-pro-env", "/bin/bash", "-c"]
+# RUN cd ./svision/ \
+#     && python setup.py install
+# SHELL ["/bin/bash", "-c"]
 
-# WTDBG2 (for debreak)
-ARG wtdbg2_version=2.5
-RUN wget https://github.com/ruanjue/wtdbg2/releases/download/v2.5/wtdbg-${wtdbg2_version}_x64_linux.tgz \
-    && tar xzf wtdbg-${wtdbg2_version}_x64_linux.tgz \
-    && rm -f wtdbg-${wtdbg2_version}_x64_linux.tgz \
-    && mv ./wtdbg-${wtdbg2_version}_x64_linux/ ./wtdbg2/ \
-    && ./wtdbg2/wtdbg2 --help
+# # SAWFISH
+# ARG sawfish_version=0.12.9
+# RUN wget https://github.com/PacificBiosciences/sawfish/releases/download/v0.12.9/sawfish-v${sawfish_version}-x86_64-unknown-linux-gnu.tar.gz \
+#     && tar xzf sawfish-v${sawfish_version}-x86_64-unknown-linux-gnu.tar.gz \
+#     && rm -f sawfish-v${sawfish_version}-x86_64-unknown-linux-gnu.tar.gz \
+#     && mv ./sawfish-v${sawfish_version}-x86_64-unknown-linux-gnu/ ./sawfish/ \
+#     && ./sawfish/bin/sawfish --help
+    
+# # NANOVAR
+# ARG nanovar_version=1.8.3
+# RUN wget https://github.com/benoukraflab/NanoVar/archive/refs/tags/v${nanovar_version}.tar.gz \
+#     && tar xzf v${nanovar_version}.tar.gz \
+#     && rm -f v${nanovar_version}.tar.gz \
+#     && cd NanoVar-${nanovar_version} \
+#     && pip install .
+    
+# # SVIM
+# ARG svim_version=2.0.0
+# RUN wget https://github.com/eldariont/svim/archive/refs/tags/v${svim_version}.tar.gz \
+#     && tar xzf v${svim_version}.tar.gz \
+#     && rm -f v${svim_version}.tar.gz \
+#     && cd svim-${svim_version} \
+#     && pip install . \
+#     && svim --help
 
-# DEBREAK
-ARG debreak_version=1.2
-RUN wget https://github.com/Maggi-Chen/DeBreak/archive/refs/tags/v${debreak_version}.tar.gz \
-    && tar xzf v${debreak_version}.tar.gz \
-    && rm -f v${debreak_version}.tar.gz \
-    && mv ./DeBreak-${debreak_version}/ ./debreak/ \
-    && ./debreak/debreak --help
+# # WTDBG2 (for debreak)
+# ARG wtdbg2_version=2.5
+# RUN wget https://github.com/ruanjue/wtdbg2/releases/download/v2.5/wtdbg-${wtdbg2_version}_x64_linux.tgz \
+#     && tar xzf wtdbg-${wtdbg2_version}_x64_linux.tgz \
+#     && rm -f wtdbg-${wtdbg2_version}_x64_linux.tgz \
+#     && mv ./wtdbg-${wtdbg2_version}_x64_linux/ ./wtdbg2/ \
+#     && ./wtdbg2/wtdbg2 --help
+
+# # DEBREAK
+# ARG debreak_version=1.2
+# RUN wget https://github.com/Maggi-Chen/DeBreak/archive/refs/tags/v${debreak_version}.tar.gz \
+#     && tar xzf v${debreak_version}.tar.gz \
+#     && rm -f v${debreak_version}.tar.gz \
+#     && mv ./DeBreak-${debreak_version}/ ./debreak/ \
+#     && ./debreak/debreak --help
 
 
 # ------------------------------- SV MERGING -----------------------------------

@@ -86,13 +86,14 @@ task JasmineImpl {
         N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         TIME_COMMAND="/usr/bin/time --verbose"
         EFFECTIVE_MEM_GB=$(( ~{ram_gb} - 2 ))
+        JAVA_PATH="/usr/bin/java"
         
         gunzip -c ~{bcftools_merge_vcf_gz} > input.vcf
         echo "input.vcf" > list.txt
         # Remark: using `--output_genotypes` on the bcftools merge VCF leads to 
         # a NullPointerException:
         # at AddGenotypes.addGenotypes(AddGenotypes.java:152).
-        ${TIME_COMMAND} java -cp /opt/conda/bin/jasmine.jar -Xms${EFFECTIVE_MEM_GB}G -Xmx${EFFECTIVE_MEM_GB}G Main threads=${N_THREADS} ~{jasmine_params} file_list=list.txt out_file=~{sample_id}.jasmine.vcf
+        ${TIME_COMMAND} ${JAVA_PATH} -jar /opt/conda/bin/jasmine.jar -Xms${EFFECTIVE_MEM_GB}G -Xmx${EFFECTIVE_MEM_GB}G threads=${N_THREADS} ~{jasmine_params} file_list=list.txt out_file=~{sample_id}.jasmine.vcf
         ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z ~{sample_id}.jasmine.vcf > ~{sample_id}.jasmine.vcf.gz
         tabix -f ~{sample_id}.jasmine.vcf.gz
     >>>
