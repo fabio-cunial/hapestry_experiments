@@ -9,17 +9,6 @@ version 1.0
 # callers. `min_seq_id=0.9` mimics what is done in a production pipeline like
 # AoU, but in jasmine it only works with INS.
 #
-# When we do inter-sample jasmine on the VCFs emitted by the intra-sample
-# jasmine above, we just use:
-#
-# min_seq_id=0.7
-#
-# In particular, `--allow_intrasample` is not enabled, since we assume that
-# intra-sample merging has already been performed. `min_seq_id=0.7` mimics what
-# is done in a production pipeline like AoU. Note that `min_seq_id` defaults to
-# zero, which means that the sequence similarity of INS is not taken into
-# account.
-#
 # When we do inter-sample jasmine on the bcftools merge of all raw calls from
 # all callers, we use:
 #
