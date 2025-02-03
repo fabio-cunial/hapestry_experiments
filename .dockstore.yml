@@ -25,22 +25,91 @@ workflows:
 - name: SVision
   subclass: wdl
   publish: True
-  primaryDescriptorPath: /wdl/SVision.wdl  
-# - name: VcfdistEvaluation
-#   subclass: wdl
-#   publish: True
-#   primaryDescriptorPath: /wdl/VcfdistEvaluation.wdl
-#   testParameterFiles:
-# - name: subset_n_samples_from_vcf
-#   subclass: wdl
-#   publish: True
-#   primaryDescriptorPath: /wdl/subset_n_samples_from_vcf.wdl
-# - name: subset_csv_samples_using_vcf
-#   subclass: wdl
-#   publish: True
-#   primaryDescriptorPath: /wdl/subset_csv_samples_using_vcf.wdl
-# - name: clean_vcf
-#   subclass: wdl
-#   publish: True
-#   primaryDescriptorPath: /wdl/clean_vcf.wdl
-#   testParameterFiles:
+  primaryDescriptorPath: /wdl/SVision.wdl 
+- name: Sawfish
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Sawfish.wdl  
+- name: Cutesv
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Cutesv.wdl  
+- name: Nanovar
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Nanovar.wdl  
+- name: Svim
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Svim.wdl   
+- name: Debreak
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Debreak.wdl    
+- name: BcftoolsMergeNoDuplicates
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/BcftoolsMergeNoDuplicates.wdl
+- name: BcftoolsMergeDipcall
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/BcftoolsMergeDipcall.wdl  
+- name: VcfdistEvaluation
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/VcfdistEvaluation.wdl
+  testParameterFiles:
+- name: subset_n_samples_from_vcf
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/subset_n_samples_from_vcf.wdl
+- name: subset_csv_samples_using_vcf
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/subset_csv_samples_using_vcf.wdl
+- name: clean_vcf
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/clean_vcf.wdl
+  testParameterFiles:
+- name: fill_vcf_ref_alleles_from_fasta
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/fill_vcf_ref_alleles_from_fasta.wdl
+  testParameterFiles:
+- name: Resolve
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Resolve.wdl  
+- name: BcftoolsMergeIntrasample
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/BcftoolsMergeIntrasample.wdl
+- name: BcftoolsMergeIntersample
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/BcftoolsMergeIntersample.wdl
+- name: SnifflesIntersample
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/SnifflesIntersample.wdl
+- name: PbsvIntersample
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/PbsvIntersample.wdl
+- name: Truvari
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Truvari.wdl
+- name: Jasmine
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Jasmine.wdl
+- name: JasminePrime
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/JasminePrime.wdl
+- name: JasmineIntersample1
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/JasmineIntersample1.wdl
