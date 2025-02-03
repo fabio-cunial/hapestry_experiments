@@ -113,3 +113,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/JasmineIntersample1.wdl
+- name: Panpop
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Panpop.wdl

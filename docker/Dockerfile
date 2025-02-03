@@ -225,7 +225,14 @@ RUN conda config --add channels bioconda \
     && conda config --add channels conda-forge \
     && conda install jasminesv=${jasmine_version}
 
-
+# PANPOP
+ARG panpop_version=NC2024
+RUN wget https://github.com/starskyzheng/panpop/archive/refs/tags/${panpop_version}.tar.gz \
+    && tar xzf ${panpop_version}.tar.gz \
+    && rm -f ${panpop_version}.tar.gz \
+    && cd panpop-${panpop_version} \
+    && conda env create -f conda.panpop.yaml
+SHELL ["conda", "run", "-n", "panpop", "/bin/bash", "-c"]
 
 # # MAFFT
 # RUN conda install conda-forge::mafft \
