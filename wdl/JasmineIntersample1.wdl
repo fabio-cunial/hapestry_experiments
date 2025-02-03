@@ -1,16 +1,7 @@
 version 1.0
 
-# In intra-sample jasmine we use:
-#
-# --allow_intrasample min_seq_id=0.9
-#
-# In particular, `--allow_intrasample` is necessary, since the bcftools merge
-# VCF in input contains just one sample column and variants from different
-# callers. `min_seq_id=0.9` mimics what is done in a production pipeline like
-# AoU, but in jasmine it only works with INS.
-#
-# When we do inter-sample jasmine on the VCFs emitted by the intra-sample
-# jasmine above, we just use:
+# When we do inter-sample jasmine on the VCFs emitted by intra-sample jasmine,
+# we just use:
 #
 # min_seq_id=0.7
 #
@@ -29,11 +20,11 @@ version 1.0
 # sample might come from different callers, and `min_seq_id=0.7` mimics the AoU
 # setting above, even though this is a different input VCF.
 #
-workflow Jasmine {
+workflow JasmineIntersample1 {
     input {
         String sample_id
-        File bcftools_merge_vcf_gz
-        File bcftools_merge_tbi
+        Array[File] input_vcf_gz
+        Array[File] input_tbi
         String jasmine_params = " "
         Int n_cpu
         Int ram_gb
@@ -45,8 +36,8 @@ workflow Jasmine {
     call JasmineImpl {
         input:
             sample_id = sample_id,
-            bcftools_merge_vcf_gz = bcftools_merge_vcf_gz,
-            bcftools_merge_tbi = bcftools_merge_tbi,
+            input_vcf_gz = input_vcf_gz,
+            input_tbi = input_tbi,
             jasmine_params = jasmine_params,
             n_cpu = n_cpu,
             ram_gb = ram_gb,
@@ -59,19 +50,12 @@ workflow Jasmine {
 }
 
 
-# Performance on a VM with 16 cores and 16GB of RAM:
-#
-# COVERAGE  CPU     RAM     TIME
-# 4x        100%    2.5G    9m
-# 8x        150%    1.9G    2m
-# 16x       150%    1.8G    2m
-# 32x       150%    2.2G    2m
 #
 task JasmineImpl {
     input {
         String sample_id
-        File bcftools_merge_vcf_gz
-        File bcftools_merge_tbi
+        Array[File] input_vcf_gz
+        Array[File] input_tbi
         String jasmine_params
         Int n_cpu
         Int ram_gb
@@ -95,18 +79,18 @@ task JasmineImpl {
         EFFECTIVE_MEM_GB=$(( ~{ram_gb} - 2 ))
         JAVA_PATH="/usr/bin/java"  # Using the latest JRE
         
-        # - Making all DELs and INVs symbolic to speed up Jasmine. Without this,
-        #   in degenerate cases it takes hours to intra-sample merge on a
-        #   reasonably-sized cloud VM, even with SSD.
-        gunzip -c ~{bcftools_merge_vcf_gz} > tmp1.vcf
-        python ~{docker_dir}/symbolic_jasmine.py tmp1.vcf > input.vcf
-        rm -f tmp1.vcf
-        echo "input.vcf" > list.txt
-        
-        # - Using `--output_genotypes` on a bcftools merge VCF with only one
-        #   sample leads to a NullPointerException:
-        #   at AddGenotypes.addGenotypes(AddGenotypes.java:152).
-        ${TIME_COMMAND} ${JAVA_PATH} -jar /opt/conda/bin/jasmine.jar -Xms${EFFECTIVE_MEM_GB}G -Xmx${EFFECTIVE_MEM_GB}G threads=${N_THREADS} ~{jasmine_params} file_list=list.txt out_file=tmp2.vcf
+
+
+        INPUT_FILES=~{sep=',' input_vcf_gz}
+        INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
+        rm -f list.txt
+        i="0"
+        for INPUT_FILE in ${INPUT_FILES}; do
+            i=$(( ${i} + 1 ))
+            gunzip -c ${INPUT_FILE} > ${i}.vcf
+            echo ${i}.vcf >> list.txt
+        done
+        ${TIME_COMMAND} ${JAVA_PATH} -jar /opt/conda/bin/jasmine.jar -Xms${EFFECTIVE_MEM_GB}G -Xmx${EFFECTIVE_MEM_GB}G threads=${N_THREADS} --output_genotypes ~{jasmine_params} file_list=list.txt out_file=tmp2.vcf
         
         # - Removing a suffix of the INFO field added by Jasmine, since it makes
         #   bcftools sort crash.

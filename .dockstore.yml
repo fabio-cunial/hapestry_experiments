@@ -109,3 +109,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/JasminePrime.wdl
+- name: JasmineIntersample1
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/JasmineIntersample1.wdl
