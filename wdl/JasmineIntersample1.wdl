@@ -92,7 +92,7 @@ task JasmineImpl {
         # - Using `--output_genotypes` gives again a NullPointerException:
         #   Cannot invoke "java.lang.Integer.intValue()" because the return
         #   value of "java.util.HashMap.get(Object)" is null
-	    #   at AddGenotypes.addGenotypes(AddGenotypes.java:152)
+        #   at AddGenotypes.addGenotypes(AddGenotypes.java:152)
         ${TIME_COMMAND} ${JAVA_PATH} -jar /opt/conda/bin/jasmine.jar -Xms${EFFECTIVE_MEM_GB}G -Xmx${EFFECTIVE_MEM_GB}G threads=${N_THREADS} ~{jasmine_params} file_list=list.txt out_file=tmp2.vcf
         
         # - Removing a suffix of the INFO field added by Jasmine, since it makes
