@@ -86,21 +86,40 @@ task JasmineImpl {
         N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         TIME_COMMAND="/usr/bin/time --verbose"
         EFFECTIVE_MEM_GB=$(( ~{ram_gb} - 2 ))
-        JAVA_PATH="/usr/bin/java"
+        JAVA_PATH="/usr/bin/java"  # Using the latest JRE
         
-        # - Making all DELs and INVs symbolic to speed up Jasmine
+        # - Making all DELs and INVs symbolic to speed up Jasmine. Without this,
+        #   it takes hours to do intra-sample merge in a reasonably-sized cloud
+        #   VM, even with SSD.
         gunzip -c ~{bcftools_merge_vcf_gz} > tmp1.vcf
         python ~{docker_dir}/symbolic_jasmine.py tmp1.vcf > input.vcf
         rm -f tmp1.vcf
         echo "input.vcf" > list.txt
         
         # - Using `--output_genotypes` on a bcftools merge VCF with only one
-        # sample leads to a NullPointerException:
-        # at AddGenotypes.addGenotypes(AddGenotypes.java:152).
-        ${TIME_COMMAND} ${JAVA_PATH} -jar /opt/conda/bin/jasmine.jar -Xms${EFFECTIVE_MEM_GB}G -Xmx${EFFECTIVE_MEM_GB}G threads=${N_THREADS} ~{jasmine_params} file_list=list.txt out_file=~{sample_id}.jasmine.vcf
+        #   sample leads to a NullPointerException:
+        #   at AddGenotypes.addGenotypes(AddGenotypes.java:152).
+        ${TIME_COMMAND} ${JAVA_PATH} -jar /opt/conda/bin/jasmine.jar -Xms${EFFECTIVE_MEM_GB}G -Xmx${EFFECTIVE_MEM_GB}G threads=${N_THREADS} ~{jasmine_params} file_list=list.txt out_file=tmp2.vcf
         
-        # - Outputting
-        ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z ~{sample_id}.jasmine.vcf > ~{sample_id}.jasmine.vcf.gz
+        # - Removing a suffix of the INFO field added by Jasmine, since it makes
+        #   bcftools sort crash.
+        bcftools view --header-only --no-version tmp2.vcf > tmp3.vcf
+        N_ROWS=$(wc -l < tmp3.vcf)
+        tail -n +$(( ${N_ROWS} + 1 )) tmp2.vcf > body.txt
+        rm -f tmp2.vcf
+        ${TIME_COMMAND} cat body.txt | awk '{ \
+            pattern="ALLVARS_EXT"; \
+            \
+            printf("%s",$1); \
+            for (i=2; i<8; i++) printf("\t%s",$i); \
+            i=match($8,pattern); \
+            if (i!=0) printf("\t%s",substr($8,1,i-1)); \
+            else printf("\t%s",$8); \
+            for (i=9; i<=NF; i++) printf("\t%s",$i); \
+            printf("\n"); \
+        }' >> tmp3.vcf
+        rm -f body.txt
+        ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z tmp3.vcf > ~{sample_id}.jasmine.vcf.gz
         tabix -f ~{sample_id}.jasmine.vcf.gz
     >>>
     output {
@@ -111,7 +130,7 @@ task JasmineImpl {
         docker: "fcunial/hapestry_experiments"
         cpu: n_cpu
         memory: ram_gb + "GB"
-        disks: "local-disk " + disk_size_gb + " SSD"
+        disks: "local-disk " + disk_size_gb + " HDD"
         preemptible: 0
     }
 }
