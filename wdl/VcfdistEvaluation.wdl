@@ -77,6 +77,7 @@ workflow VcfdistEvaluation {
         # Clean the single-sample VCF (don't do this in first step because VCF too big)
         call clean_vcf.CleanVcfAlleles as clean { input:
             vcf_gz = SubsetSampleFromVcfEval.single_sample_vcf,
+            vcf_tbi = SubsetSampleFromVcfEval.single_sample_vcf_tbi,
             ref_fasta = reference_fasta
         }
 
