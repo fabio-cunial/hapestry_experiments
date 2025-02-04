@@ -71,7 +71,7 @@ task PanpopImpl {
         ${TIME_COMMAND} ${PANPOP_COMMAND} -t ${N_THREADS} --in_vcf ./output1/3.final.vcf.gz -r ~{reference_fa} --tmpdir ./tmpdir2/ -o ./output2/ -not_first_merge
         ls -laht ./tmpdir2/
         tree -a
-        mv ./tmpdir2/3.final.vcf.gz ~{sample_id}.panpop.vcf.gz
+        ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z ./tmpdir2/3.final.vcf.gz > ~{sample_id}.panpop.vcf.gz
         tabix -f ~{sample_id}.panpop.vcf.gz
     >>>
     output {
