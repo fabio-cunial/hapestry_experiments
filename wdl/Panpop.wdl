@@ -5,8 +5,8 @@ version 1.0
 workflow Panpop {
     input {
         String sample_id
-        File bcftools_merge_vcf_gz
-        File bcftools_merge_tbi
+        Array[File] sample_vcf_gz
+        Array[File] sample_tbi
         File reference_fa
         File reference_fai
         Int n_cpu
@@ -19,8 +19,8 @@ workflow Panpop {
     call PanpopImpl {
         input:
             sample_id = sample_id,
-            bcftools_merge_vcf_gz = bcftools_merge_vcf_gz,
-            bcftools_merge_tbi = bcftools_merge_tbi,
+            sample_vcf_gz = sample_vcf_gz,
+            sample_tbi = sample_tbi,
             reference_fa = reference_fa,
             reference_fai = reference_fai,
             n_cpu = n_cpu,
@@ -38,8 +38,8 @@ workflow Panpop {
 task PanpopImpl {
     input {
         String sample_id
-        File bcftools_merge_vcf_gz
-        File bcftools_merge_tbi
+        Array[File] sample_vcf_gz
+        Array[File] sample_tbi
         File reference_fa
         File reference_fai
         Int n_cpu
@@ -64,13 +64,35 @@ task PanpopImpl {
         EFFECTIVE_MEM_GB=$(( ~{ram_gb} - 2 ))
         PANPOP_COMMAND="perl ~{docker_dir}/panpop-NC2024/bin/PART_run.pl"
         
+        # Replicating what <BcftoolsMergeIntrasample.wdl> does, but keeping one
+        # column per caller.
+        
+        # - Merging all single-caller VCFs
+        INPUT_FILES=~{sep=',' sample_vcf_gz}
+        INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
+        rm -f list.txt
+        for INPUT_FILE in ${INPUT_FILES}; do
+            echo ${INPUT_FILE} >> list.txt
+        done
+        ${TIME_COMMAND} bcftools merge --threads ${N_THREADS} --merge none --force-samples --file-list list.txt --output-type z > tmp1.vcf.gz
+        tabix -f tmp1.vcf.gz
+        
+        # - Removing multiallelic records, if any are generated during the
+        # merge.
+        ${TIME_COMMAND} bcftools norm --threads ${N_THREADS} --multiallelics - --output-type z tmp1.vcf.gz > tmp2.vcf.gz
+        tabix -f tmp2.vcf.gz
+        rm -f tmp1.vcf.gz*
+        
+        # Running panpop
         source activate panpop
         cpanm MCE::Channel Tie::CharArray
-        ${TIME_COMMAND} ${PANPOP_COMMAND} -t ${N_THREADS} --in_vcf ~{bcftools_merge_vcf_gz} -r ~{reference_fa} --tmpdir ./tmpdir1/ -o ./output1/
+        ${TIME_COMMAND} ${PANPOP_COMMAND} -t ${N_THREADS} --in_vcf tmp2.vcf.gz -r ~{reference_fa} --tmpdir ./tmpdir1/ -o ./output1/
         ls -laht ./tmpdir1/
         ${TIME_COMMAND} ${PANPOP_COMMAND} -t ${N_THREADS} --in_vcf ./output1/3.final.vcf.gz -r ~{reference_fa} --tmpdir ./tmpdir2/ -o ./output2/ -not_first_merge
         ls -laht ./tmpdir2/
         tree -a
+        
+        # Outputting
         ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z ./tmpdir2/3.final.vcf.gz > ~{sample_id}.panpop.vcf.gz
         tabix -f ~{sample_id}.panpop.vcf.gz
     >>>
