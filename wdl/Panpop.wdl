@@ -64,7 +64,8 @@ task PanpopImpl {
         EFFECTIVE_MEM_GB=$(( ~{ram_gb} - 2 ))
         PANPOP_COMMAND="perl ~{docker_dir}/panpop-NC2024/bin/PART_run.pl"
         
-        
+        conda activate panpop
+        cpanm MCE::Channel Tie::CharArray
         ${TIME_COMMAND} ${PANPOP_COMMAND} -t ${N_THREADS} --in_vcf ~{bcftools_merge_vcf_gz} -r ~{reference_fa} --tmpdir ./tmpdir1/ -o ./output1/
         ls -laht ./tmpdir1/
         ${TIME_COMMAND} ${PANPOP_COMMAND} -t ${N_THREADS} --in_vcf ./output1/3.final.vcf.gz -r ~{reference_fa} --tmpdir ./tmpdir2/ -o ./output2/ -not_first_merge
