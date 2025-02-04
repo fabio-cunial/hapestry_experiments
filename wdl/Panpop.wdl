@@ -5,24 +5,27 @@ version 1.0
 workflow Panpop {
     input {
         String sample_id
-        Array[File] sample_vcf_gz
-        Array[File] sample_tbi
+        File bcftools_merge_vcf_gz
+        File bcftools_merge_tbi
         File reference_fa
         File reference_fai
+        Int max_sv_length = 20000
         Int n_cpu
         Int ram_gb
         Int disk_size_gb
     }
     parameter_meta {
+        max_sv_length: "SVs that are too long make even an intra-sample merge too slow."
     }
     
     call PanpopImpl {
         input:
             sample_id = sample_id,
-            sample_vcf_gz = sample_vcf_gz,
-            sample_tbi = sample_tbi,
+            bcftools_merge_vcf_gz = bcftools_merge_vcf_gz,
+            bcftools_merge_tbi = bcftools_merge_tbi,
             reference_fa = reference_fa,
             reference_fai = reference_fai,
+            max_sv_length = max_sv_length,
             n_cpu = n_cpu,
             ram_gb = ram_gb,
             disk_size_gb = disk_size_gb
@@ -38,10 +41,11 @@ workflow Panpop {
 task PanpopImpl {
     input {
         String sample_id
-        Array[File] sample_vcf_gz
-        Array[File] sample_tbi
+        File bcftools_merge_vcf_gz
+        File bcftools_merge_tbi
         File reference_fa
         File reference_fai
+        Int max_sv_length
         Int n_cpu
         Int ram_gb
         Int disk_size_gb
@@ -64,36 +68,28 @@ task PanpopImpl {
         EFFECTIVE_MEM_GB=$(( ~{ram_gb} - 2 ))
         PANPOP_COMMAND="perl ~{docker_dir}/panpop-NC2024/bin/PART_run.pl"
         
-        # Replicating what <BcftoolsMergeIntrasample.wdl> does, but keeping one
-        # column per caller.
-        
-        # - Merging all single-caller VCFs
-        INPUT_FILES=~{sep=',' sample_vcf_gz}
-        INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
-        rm -f list.txt
-        for INPUT_FILE in ${INPUT_FILES}; do
-            echo ${INPUT_FILE} >> list.txt
-        done
-        ${TIME_COMMAND} bcftools merge --threads ${N_THREADS} --merge none --force-samples --file-list list.txt --output-type z > tmp1.vcf.gz
+        # - Removing calls that are too long
+        bcftools filter --include "INFO/SVLEN>=-~{max_sv_length} && INFO/SVLEN<=~{max_sv_length}" --output-type z ~{bcftools_merge_vcf_gz} > tmp1.vcf.gz
         tabix -f tmp1.vcf.gz
         
-        # - Removing multiallelic records, if any are generated during the
-        # merge.
-        ${TIME_COMMAND} bcftools norm --threads ${N_THREADS} --multiallelics - --output-type z tmp1.vcf.gz > tmp2.vcf.gz
-        tabix -f tmp2.vcf.gz
-        rm -f tmp1.vcf.gz*
-        
-        # Running panpop
+        # - Running panpop
         source activate panpop
         cpanm MCE::Channel Tie::CharArray
-        ${TIME_COMMAND} ${PANPOP_COMMAND} -t ${N_THREADS} --in_vcf tmp2.vcf.gz -r ~{reference_fa} --tmpdir ./tmpdir1/ -o ./output1/
+        ${TIME_COMMAND} ${PANPOP_COMMAND} -t ${N_THREADS} --in_vcf tmp1.vcf.gz -r ~{reference_fa} --tmpdir ./tmpdir1/ -o ./output1/
         ls -laht ./tmpdir1/
+        rm -f tmp1.vcf.gz*
         ${TIME_COMMAND} ${PANPOP_COMMAND} -t ${N_THREADS} --in_vcf ./output1/3.final.vcf.gz -r ~{reference_fa} --tmpdir ./tmpdir2/ -o ./output2/ -not_first_merge
         ls -laht ./tmpdir2/
         tree -a
+        conda deactivate
         
-        # Outputting
-        ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z ./tmpdir2/3.final.vcf.gz > ~{sample_id}.panpop.vcf.gz
+        # - Removing multiallelic records, which might have been created by
+        #   panpop.
+        ${TIME_COMMAND} bcftools norm --threads ${N_THREADS} --multiallelics - --output-type z ./output2/3.final.vcf.gz > tmp2.vcf.gz
+        tabix -f tmp2.vcf.gz
+        
+        # - Outputting
+        ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z tmp2.vcf.gz > ~{sample_id}.panpop.vcf.gz
         tabix -f ~{sample_id}.panpop.vcf.gz
     >>>
     output {
