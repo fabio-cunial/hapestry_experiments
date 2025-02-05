@@ -9,13 +9,13 @@ workflow Panpop {
         File bcftools_merge_tbi
         File reference_fa
         File reference_fai
-        Int max_sv_length = 20000
+        Int max_sv_length = 50000
         Int n_cpu
         Int ram_gb
         Int disk_size_gb
     }
     parameter_meta {
-        max_sv_length: "SVs that are too long make even an intra-sample merge too slow."
+        max_sv_length: "SVs that are too long make even an intra-sample merge too slow. 0=do not remove long SVs."
     }
     
     call PanpopImpl {
@@ -69,8 +69,13 @@ task PanpopImpl {
         PANPOP_COMMAND="perl ~{docker_dir}/panpop-NC2024/bin/PART_run.pl"
         
         # - Removing calls that are too long
-        bcftools filter --include "INFO/SVLEN>=-~{max_sv_length} && INFO/SVLEN<=~{max_sv_length}" --output-type z ~{bcftools_merge_vcf_gz} > tmp1.vcf.gz
-        tabix -f tmp1.vcf.gz
+        if [ ~{max_sv_length} -eq 0 ]; then
+            mv ~{bcftools_merge_vcf_gz} tmp1.vcf.gz
+            mv ~{bcftools_merge_tbi} tmp1.vcf.gz.tbi
+        else
+            bcftools filter --include "INFO/SVLEN>=-~{max_sv_length} && INFO/SVLEN<=~{max_sv_length}" --output-type z ~{bcftools_merge_vcf_gz} > tmp1.vcf.gz
+            tabix -f tmp1.vcf.gz
+        fi
         
         # - Running panpop
         source activate panpop
