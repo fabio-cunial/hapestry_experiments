@@ -24,11 +24,13 @@ workflow Jasmine {
         File bcftools_merge_vcf_gz
         File bcftools_merge_tbi
         String jasmine_params = " "
+        Int max_sv_length = 0
         Int n_cpu
         Int ram_gb
         Int disk_size_gb
     }
     parameter_meta {
+        max_sv_length: "SVs that are too long make working on the inter-sample bcftools merge too slow (50000 works well in this case). 0=do not remove long SVs."
     }
     
     call JasmineImpl {
@@ -37,6 +39,7 @@ workflow Jasmine {
             bcftools_merge_vcf_gz = bcftools_merge_vcf_gz,
             bcftools_merge_tbi = bcftools_merge_tbi,
             jasmine_params = jasmine_params,
+            max_sv_length = max_sv_length,
             n_cpu = n_cpu,
             ram_gb = ram_gb,
             disk_size_gb = disk_size_gb
@@ -62,6 +65,7 @@ task JasmineImpl {
         File bcftools_merge_vcf_gz
         File bcftools_merge_tbi
         String jasmine_params
+        Int max_sv_length
         Int n_cpu
         Int ram_gb
         Int disk_size_gb
@@ -84,10 +88,18 @@ task JasmineImpl {
         EFFECTIVE_MEM_GB=$(( ~{ram_gb} - 2 ))
         JAVA_PATH="/usr/bin/java"  # Using the latest JRE
         
+        # - Removing calls that are too long. Without this, processing the
+        #   bcftools merge of all samples takes days.
+        if [ ~{max_sv_length} -eq 0 ]; then
+            gunzip -c ~{bcftools_merge_vcf_gz} > tmp1.vcf
+        else
+            bcftools filter --include "INFO/SVLEN>=-~{max_sv_length} && INFO/SVLEN<=~{max_sv_length}" --output-type v ~{bcftools_merge_vcf_gz} > tmp1.vcf
+        fi
+        rm -f ~{bcftools_merge_vcf_gz}
+        
         # - Making all DELs and INVs symbolic to speed up Jasmine. Without this,
         #   in degenerate cases it takes hours to intra-sample merge on a
         #   reasonably-sized cloud VM, even with SSD.
-        gunzip -c ~{bcftools_merge_vcf_gz} > tmp1.vcf
         python ~{docker_dir}/symbolic_jasmine.py tmp1.vcf > input.vcf
         rm -f tmp1.vcf
         echo "input.vcf" > list.txt
