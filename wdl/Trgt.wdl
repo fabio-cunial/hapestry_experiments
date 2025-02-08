@@ -82,14 +82,15 @@ task TrgtImpl {
         else
             KARYOTYPE="XY"
         fi
-        ${TIME_COMMAND} trgt genotype \
+        ${TIME_COMMAND} ~{docker_dir}/trgt genotype \
+            --threads ${N_THREADS} \
+            --disable-bam-output \
             --sample-name ~{sample_id} \
+            --karyotype ${KARYOTYPE} \
             --genome ~{ref_fa} \
             --repeats ~{repeat_catalog} \
             --reads ~{input_bam} \
-            --threads ${N_THREADS} \
-            --output-prefix tmp1 \
-            --karyotype ${KARYOTYPE}
+            --output-prefix tmp1
 
         ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z tmp1.vcf.gz > ~{output_name}.vcf.gz
         tabix -f ~{output_name}.vcf.gz
