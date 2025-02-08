@@ -11,7 +11,6 @@ workflow Trgt {
         File ref_fa
         File ref_fai
         File repeat_catalog
-        String repeat_catalog_name
         Int n_cpu = 64
         Int ram_gb = 64
     }
@@ -28,7 +27,6 @@ workflow Trgt {
             ref_fa = ref_fa,
             ref_fai = ref_fai,
             repeat_catalog = repeat_catalog,
-            repeat_catalog_name = repeat_catalog_name,
             n_cpu = n_cpu,
             ram_gb = ram_gb
     }
@@ -61,7 +59,6 @@ task TrgtImpl {
         File ref_fa
         File ref_fai
         File repeat_catalog
-        String repeat_catalog_name
         Int n_cpu
         Int ram_gb
     }
@@ -71,8 +68,7 @@ task TrgtImpl {
 
     String docker_dir = "/hapestry"
     String work_dir = "/cromwell_root/hapestry"
-    Int disk_size_gb = 100 + 5*ceil(size(input_bam,"GB"))
-    String output_name = sample_id + ".trgt." + repeat_catalog_name
+    Int disk_size_gb = 50 + 2*ceil(size(input_bam,"GB")) + 2*ceil(size(repeat_catalog,"GB"))
 
     command <<<
         set -euxo pipefail
@@ -116,16 +112,16 @@ task TrgtImpl {
         rm -f tmp3.vcf*
         
         # Outputting
-        mv tmp2.vcf.gz ~{output_name}.vcf.gz
-        mv tmp2.vcf.gz.tbi ~{output_name}.vcf.gz.tbi
-        mv tmp4.vcf.gz ~{output_name}.resolved.vcf.gz
-        mv tmp4.vcf.gz.tbi ~{output_name}.resolved.vcf.gz.tbi
+        mv tmp2.vcf.gz ~{sample_id}.trgt.vcf.gz
+        mv tmp2.vcf.gz.tbi ~{sample_id}.trgt.vcf.gz.tbi
+        mv tmp4.vcf.gz ~{sample_id}.trgt.resolved.vcf.gz
+        mv tmp4.vcf.gz.tbi ~{sample_id}.trgt.resolved.vcf.gz.tbi
     >>>
     output {
-        File output_vcf_gz = work_dir + "/" + output_name + ".vcf.gz"
-        File output_tbi = work_dir + "/" + output_name + ".vcf.gz.tbi"
-        File output_resolved_vcf_gz = work_dir + "/" + output_name + ".resolved.vcf.gz"
-        File output_resolved_tbi = work_dir + "/" + output_name + ".resolved.vcf.gz.tbi"
+        File output_vcf_gz = work_dir + "/" + sample_id + ".trgt.vcf.gz"
+        File output_tbi = work_dir + "/" + sample_id + ".trgt.vcf.gz.tbi"
+        File output_resolved_vcf_gz = work_dir + "/" + sample_id + ".trgt.resolved.vcf.gz"
+        File output_resolved_tbi = work_dir + "/" + sample_id + ".trgt.resolved.vcf.gz.tbi"
     }
     runtime {
         docker: "fcunial/hapestry_experiments"
