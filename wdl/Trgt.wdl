@@ -40,8 +40,8 @@ workflow Trgt {
 
 
 # Remark: in addition to the raw output VCF from TRGT, the task outputs also a
-# resolved version where ALT=. records are discarded and multiallelic records
-# are split into multiple records. 
+# resolved version where records with missing or ref GT are discarded, and
+# multiallelic records are split into multiple records. 
 #
 # Remark: both the resolved and the raw VCFs are sorted.
 #
@@ -102,8 +102,8 @@ task TrgtImpl {
         tabix -f tmp2.vcf.gz
         rm -f tmp1.vcf*
         
-        # - Discarding ALT=. records, which mean GT=0/0.
-        ${TIME_COMMAND} bcftools filter --threads ${N_THREADS} --exclude 'ALT="."' --output-type z tmp2.vcf.gz > tmp3.vcf.gz
+        # - Discarding records with missing or ref GT
+        ${TIME_COMMAND} bcftools filter --threads ${N_THREADS} --exclude 'GT="mis" || GT="0/0"' --output-type z tmp2.vcf.gz > tmp3.vcf.gz
         tabix -f tmp3.vcf.gz
         
         # - Removing multiallelic records, which are created by TRGT.
