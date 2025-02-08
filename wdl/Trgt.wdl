@@ -35,10 +35,18 @@ workflow Trgt {
     output {
         File output_vcf_gz = TrgtImpl.output_vcf_gz
         File output_tbi = TrgtImpl.output_tbi
+        File output_resolved_vcf_gz = TrgtImpl.output_resolved_vcf_gz
+        File output_resolved_tbi = TrgtImpl.output_resolved_tbi
     }
 }
 
 
+# Remark: in addition to the raw output VCF from TRGT, the task outputs also a
+# resolved version where ALT=. records are discarded and multiallelic records
+# are split into multiple records. 
+#
+# Remark: both the resolved and the raw VCFs are sorted.
+#
 # Performance on a VM with 64 cores and 64GB of RAM:
 #
 # COVERAGE  CPU     RAM     TIME
@@ -77,6 +85,7 @@ task TrgtImpl {
         TIME_COMMAND="/usr/bin/time --verbose"
         EFFECTIVE_MEM_GB=$(( ~{ram_gb} - 2 ))
         
+        # - Running TRGT
         if [ ~{sex} = "F" ]; then
             KARYOTYPE="XX"
         else
@@ -91,13 +100,32 @@ task TrgtImpl {
             --repeats ~{repeat_catalog} \
             --reads ~{input_bam} \
             --output-prefix tmp1
-
-        ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z tmp1.vcf.gz > ~{output_name}.vcf.gz
-        tabix -f ~{output_name}.vcf.gz
+        
+        # - Sorting
+        ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z tmp1.vcf.gz > tmp2.vcf.gz
+        tabix -f tmp2.vcf.gz
+        rm -f tmp1.vcf*
+        
+        # - Discarding ALT=. records, which mean GT=0/0.
+        ${TIME_COMMAND} bcftools filter --threads ${N_THREADS} --exclude 'ALT="."' --output-type z tmp2.vcf.gz > tmp3.vcf.gz
+        tabix -f tmp3.vcf.gz
+        
+        # - Removing multiallelic records, which are created by TRGT.
+        ${TIME_COMMAND} bcftools norm --threads ${N_THREADS} --multiallelics - --output-type z tmp3.vcf.gz > tmp4.vcf.gz
+        tabix -f tmp4.vcf.gz
+        rm -f tmp3.vcf*
+        
+        # Outputting
+        mv tmp2.vcf.gz ~{output_name}.vcf.gz
+        mv tmp2.vcf.gz.tbi ~{output_name}.vcf.gz.tbi
+        mv tmp4.vcf.gz ~{output_name}.resolved.vcf.gz
+        mv tmp4.vcf.gz.tbi ~{output_name}.resolved.vcf.gz.tbi
     >>>
     output {
         File output_vcf_gz = work_dir + "/" + output_name + ".vcf.gz"
         File output_tbi = work_dir + "/" + output_name + ".vcf.gz.tbi"
+        File output_resolved_vcf_gz = work_dir + "/" + output_name + ".resolved.vcf.gz"
+        File output_resolved_tbi = work_dir + "/" + output_name + ".resolved.vcf.gz.tbi"
     }
     runtime {
         docker: "fcunial/hapestry_experiments"
