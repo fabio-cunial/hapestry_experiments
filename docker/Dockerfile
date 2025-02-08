@@ -248,6 +248,17 @@ SHELL ["conda", "run", "-n", "panpop", "/bin/bash", "-c"]
 # SHELL ["/bin/bash", "-c"]
 
 
+
+# ----------------------------- NON-SV CALLERS ---------------------------------
+
+ARG trgt_version=1.5.1
+RUN wget https://github.com/PacificBiosciences/trgt/releases/download/v1.5.1/trgt-v${trgt_version}-x86_64-unknown-linux-gnu.tar.gz \
+    && tar -zxvf trgt-v${trgt_version}-x86_64-unknown-linux-gnu.tar.gz \
+    && mv trgt-v${trgt_version}-x86_64-unknown-linux-gnu/trgt . \
+    && chmod +x trgt \
+    && ./trgt --help
+
+
 # ----------------------------- CUSTOM SCRIPTS ---------------------------------
 COPY *.java .
 RUN javac *.java

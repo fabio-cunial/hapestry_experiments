@@ -117,3 +117,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/Panpop.wdl
+- name: Trgt
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Trgt.wdl
