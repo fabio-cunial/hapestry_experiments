@@ -121,3 +121,11 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/Trgt.wdl
+- name: Trgt
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Trgt.wdl
+- name: BcftoolsMergeSvSnp
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/BcftoolsMergeSvSnp.wdl
