@@ -27,7 +27,7 @@ workflow Hifiasm {
 # Performance on a VM with 64 cores and 128GB of RAM:
 #
 # COVERAGE  CPU     RAM     TIME
-# 8x        %
+# 8x        2100%   51.5G   1h
 #
 task Assemble {
     input {

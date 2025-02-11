@@ -28,6 +28,10 @@ workflow TrgtMerge {
 }
 
 
+# Performance on a VM with 4 cores and 128GB of RAM:
+#
+# COVERAGE              CPU     RAM     TIME
+# 32x, 3 samples        100%    60M     3m
 #
 task TrgtMergeImpl {
     input {
@@ -56,6 +60,7 @@ task TrgtMergeImpl {
         INPUT_FILES=~{sep=',' input_vcf_gz}
         INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
         ${TIME_COMMAND} ~{docker_dir}/trgt merge --vcf ${INPUT_FILES} --genome ~{reference_fa} --output-type z --output merged.trgt.vcf.gz
+        tabix -f merged.trgt.vcf.gz
         ls -laht
         tree
     >>>
