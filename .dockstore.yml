@@ -129,3 +129,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/Hifiasm.wdl
+- name: TrgtMerge
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/TrgtMerge.wdl
