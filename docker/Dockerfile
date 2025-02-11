@@ -145,7 +145,7 @@ RUN conda install -c bioconda pbmm2=${pbmm2_version} \
     && pbmm2 --help
 
 
-# -------------------------------- ASSEMBLY-------------------------------------
+# ------------------------------- ASSEMBLERS -----------------------------------
 
 ARG hifiasm_version=0.24.0
 RUN wget https://github.com/chhylp123/hifiasm/archive/refs/tags/${hifiasm_version}.tar.gz \
@@ -177,6 +177,14 @@ RUN wget https://github.com/tjiangHIT/cuteSV/archive/refs/tags/cuteSV-v${cutesv_
     && cd cuteSV-cuteSV-v${cutesv_version} \
     && python setup.py install \
     && cuteSV -h
+
+# PAV
+ARG pav_version=2.4.6
+RUN wget https://github.com/EichlerLab/pav/archive/refs/tags/v${pav_version}.tar.gz \
+    && tar xzf v${pav_version}.tar.gz \
+    && rm -f v${pav_version}.tar.gz \
+    && mkdir -p /opt/ \
+    && mv pav-${pav_version} /opt/pav
 
 # # SVISION
 # ARG svision_version=2.4
@@ -234,7 +242,7 @@ RUN wget https://github.com/tjiangHIT/cuteSV/archive/refs/tags/cuteSV-v${cutesv_
 #     && ./debreak/debreak --help
 
 
-# ------------------------------- SV MERGING -----------------------------------
+# ------------------------------- SV MERGERS -----------------------------------
 
 # TRUVARI
 ARG truvari_version=5.0.0

@@ -133,3 +133,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/TrgtMerge.wdl
+- name: pav
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/pav.wdl
