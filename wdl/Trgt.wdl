@@ -128,7 +128,6 @@ task TrgtImpl {
         cpu: n_cpu
         memory: ram_gb + "GB"
         disks: "local-disk " + disk_size_gb + " HDD"
-        preemptible: 3
-        maxRetries: 0
+        preemptible: 0
     }
 }

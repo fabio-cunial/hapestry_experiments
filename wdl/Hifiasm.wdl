@@ -5,7 +5,7 @@ workflow Hifiasm {
     input {
         String sample_id
         File reads_fq
-        Int n_cpu = 32
+        Int n_cpu = 64
         Int ram_gb = 128
     }
 
