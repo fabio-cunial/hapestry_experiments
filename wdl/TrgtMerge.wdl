@@ -77,7 +77,7 @@ task TrgtMergeImpl {
         
         # Outputting
         mv tmp3.vcf.gz merged.trgt.vcf.gz
-        mv tmp3.vcf.gz.tbi mergedtrgt.vcf.gz.tbi
+        mv tmp3.vcf.gz.tbi merged.trgt.vcf.gz.tbi
     >>>
     output {
         File output_vcf_gz = work_dir + "/merged.trgt.vcf.gz"
