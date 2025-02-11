@@ -48,7 +48,7 @@ workflow Trgt {
 # Performance on a VM with 64 cores and 64GB of RAM:
 #
 # COVERAGE  CPU     RAM     TIME
-# 32x       ???%    ??G    ??
+# 32x       3100%   11G     1h46m
 #
 task TrgtImpl {
     input {

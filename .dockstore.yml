@@ -125,3 +125,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/BcftoolsMergeSvSnp.wdl
+- name: Hifiasm
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Hifiasm.wdl

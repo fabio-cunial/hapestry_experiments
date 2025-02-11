@@ -119,6 +119,16 @@ RUN wget https://github.com/arq5x/bedtools2/releases/download/v${bedtools_versio
     && bedtools --help
 
 
+# ----------------------------- NON-SV CALLERS ---------------------------------
+
+ARG trgt_version=1.5.1
+RUN wget https://github.com/PacificBiosciences/trgt/releases/download/v1.5.1/trgt-v${trgt_version}-x86_64-unknown-linux-gnu.tar.gz \
+    && tar -zxvf trgt-v${trgt_version}-x86_64-unknown-linux-gnu.tar.gz \
+    && mv trgt-v${trgt_version}-x86_64-unknown-linux-gnu/trgt . \
+    && chmod +x trgt \
+    && ./trgt --help
+
+
 # ------------------------------- ALIGNMENT ------------------------------------
 
 # MINIMAP2
@@ -135,7 +145,19 @@ RUN conda install -c bioconda pbmm2=${pbmm2_version} \
     && pbmm2 --help
 
 
-# ----------------------------- VARIANT CALLING --------------------------------
+# -------------------------------- ASSEMBLY-------------------------------------
+
+ARG hifiasm_version=0.24.0
+RUN wget https://github.com/chhylp123/hifiasm/archive/refs/tags/${hifiasm_version}.tar.gz \
+    && tar -xzvf ${hifiasm_version}.tar.gz \
+    && rm -f ${hifiasm_version}.tar.gz \
+    && mv hifiasm-${hifiasm_version} hifiasm \
+    && cd hifiasm \
+    && make -j 16 \
+    && ./hifiasm -h
+
+
+# ------------------------------- SV CALLERS -----------------------------------
 
 # SNIFFLES
 ARG sniffles_version=2.5.3
@@ -249,14 +271,8 @@ SHELL ["conda", "run", "-n", "panpop", "/bin/bash", "-c"]
 
 
 
-# ----------------------------- NON-SV CALLERS ---------------------------------
 
-ARG trgt_version=1.5.1
-RUN wget https://github.com/PacificBiosciences/trgt/releases/download/v1.5.1/trgt-v${trgt_version}-x86_64-unknown-linux-gnu.tar.gz \
-    && tar -zxvf trgt-v${trgt_version}-x86_64-unknown-linux-gnu.tar.gz \
-    && mv trgt-v${trgt_version}-x86_64-unknown-linux-gnu/trgt . \
-    && chmod +x trgt \
-    && ./trgt --help
+
 
 
 # ----------------------------- CUSTOM SCRIPTS ---------------------------------
