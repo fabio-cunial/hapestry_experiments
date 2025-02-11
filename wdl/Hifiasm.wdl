@@ -51,7 +51,7 @@ task Assemble {
         N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         TIME_COMMAND="/usr/bin/time --verbose"
 
-        ${TIME_COMMAND} hifiasm -t ${N_THREADS} -o ~{sample_id} ~{reads_fq}
+        ${TIME_COMMAND} ~{docker_dir}/hifiasm/hifiasm -t ${N_THREADS} -o ~{sample_id} ~{reads_fq}
         ls -laht
         tree
 
