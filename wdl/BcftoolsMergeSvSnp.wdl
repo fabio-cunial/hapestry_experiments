@@ -1,6 +1,8 @@
 version 1.0
 
 
+# Merges the raw joint SNP GVCF emitted by `LRJointCallGVCFs.wdl` with the
+# joint normalized SV VCF created by `BcftoolsMergeIntersample.wdl`.
 #
 workflow BcftoolsMergeSvSnp {
     input {
@@ -57,9 +59,9 @@ task Merge {
         N_SOCKETS="$(lscpu | grep '^Socket(s):' | awk '{print $NF}')"
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
         N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
-        REGIONS=""
-        for i in $(seq 1 22) X Y M; do
-            REGIONS="${REGIONS} chr${i}"
+        REGIONS="chr1"
+        for i in $(seq 2 22) X Y M; do
+            REGIONS="${REGIONS},chr${i}"
         done
         
         # - Restricting the SNP VCF to standard chromosomes
