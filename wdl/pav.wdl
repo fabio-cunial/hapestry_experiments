@@ -7,6 +7,11 @@ import "pav/call_inv.wdl" as call_inv
 import "pav/call_lg.wdl" as call_lg
 
 
+# All the WDL code is copied from:
+# https://github.com/broadinstitute/pav-wdl/blob/sh_more_resources_pete_t2thotfix
+#
+# but the docker uses PAV v2.4.6 (the latest available at creation time).
+#
 workflow pav {
   input {
     File ref

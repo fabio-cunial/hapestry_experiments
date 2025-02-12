@@ -185,6 +185,14 @@ RUN wget https://github.com/EichlerLab/pav/archive/refs/tags/v${pav_version}.tar
     && rm -f v${pav_version}.tar.gz \
     && mkdir -p /opt/ \
     && mv pav-${pav_version} /opt/pav
+COPY ./pav_environment.yml .
+RUN conda env create -f pav_environment.yml \
+    && conda clean -a
+ENV PATH=/opt/conda/envs/lr-pav/bin/:${PATH}
+COPY ./pav_test_install.py /tmp/
+SHELL ["conda", "run", "-n", "lr-pav", "/bin/bash", "-c"]
+RUN python /tmp/pav_test_install.py
+
 
 # # SVISION
 # ARG svision_version=2.4
@@ -262,7 +270,7 @@ RUN wget https://github.com/starskyzheng/panpop/archive/refs/tags/${panpop_versi
     && rm -f ${panpop_version}.tar.gz \
     && cd panpop-${panpop_version} \
     && conda env create -f conda.panpop.yaml
-SHELL ["conda", "run", "-n", "panpop", "/bin/bash", "-c"]
+#SHELL ["conda", "run", "-n", "panpop", "/bin/bash", "-c"]
 
 # # MAFFT
 # RUN conda install conda-forge::mafft \
