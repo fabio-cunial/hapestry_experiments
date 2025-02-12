@@ -1,15 +1,15 @@
 version 1.0
 
 
-# Merges the raw joint SNP GVCF emitted by `LRJointCallGVCFs.wdl` with the
-# joint normalized SV VCF created by `BcftoolsMergeIntersample.wdl`.
+# Merges a normalized joint TRGT VCF with the joint normalized SV VCF created
+# by `BcftoolsMergeIntersample.wdl`.
 #
-workflow BcftoolsMergeSvSnp {
+workflow BcftoolsMergeSvTrgt {
     input {
         File sv_vcf_gz
         File sv_tbi
-        File snp_vcf_gz
-        File snp_tbi
+        File trgt_vcf_gz
+        File trgt_tbi
         Int n_cpu = 8
         Int ram_gb = 200
     }
@@ -20,8 +20,8 @@ workflow BcftoolsMergeSvSnp {
         input:
             sv_vcf_gz = sv_vcf_gz,
             sv_tbi = sv_tbi,
-            snp_vcf_gz = snp_vcf_gz,
-            snp_tbi = snp_tbi,
+            trgt_vcf_gz = trgt_vcf_gz,
+            trgt_tbi = trgt_tbi,
             n_cpu = n_cpu,
             ram_gb = ram_gb
     }
@@ -38,15 +38,15 @@ task Merge {
     input {
         File sv_vcf_gz
         File sv_tbi
-        File snp_vcf_gz
-        File snp_tbi
+        File trgt_vcf_gz
+        File trgt_tbi
         Int n_cpu
         Int ram_gb
     }
     parameter_meta {
     }
     
-    Int disk_size_gb = 2*ceil(size(sv_vcf_gz, "GB")) + 2*ceil(size(snp_vcf_gz, "GB")) + 100
+    Int disk_size_gb = 2*ceil(size(sv_vcf_gz, "GB")) + 2*ceil(size(trgt_vcf_gz, "GB")) + 100
     String docker_dir = "/hapestry"
     String work_dir = "/cromwell_root/hapestry"
     
@@ -61,17 +61,14 @@ task Merge {
         N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         REGIONS="chr1"
         for i in $(seq 2 22) X Y M; do
-            REGIONS="${REGIONS},chr${i}"
+            REGIONS="${REGIONS} chr${i}"
         done
         
-        # - Restricting the SNP VCF to standard chromosomes
-        # - Removing multiallelic records from the SNP VCF
-        ${TIME_COMMAND} bcftools norm --threads ${N_THREADS} --rm-dup exact --multiallelics - --do-not-normalize --output-type z --regions $(echo ${REGIONS}) ~{snp_vcf_gz} > tmp1.vcf.gz
+        # - Restricting the TRGT VCF to standard chromosomes
+        ${TIME_COMMAND} bcftools view --output-type z ~{trgt_vcf_gz} ${REGIONS} > tmp1.vcf.gz
         tabix -f tmp1.vcf.gz
-        rm -f ~{snp_vcf_gz}*
-        ls -laht; df -h
         
-        # - Merging
+        # - Concatenating
         ${TIME_COMMAND} bcftools concat --threads ${N_THREADS} --rm-dups exact --allow-overlaps --output-type z ~{sv_vcf_gz} tmp1.vcf.gz > merged.vcf.gz
         tabix -f merged.vcf.gz
         ls -laht; df -h

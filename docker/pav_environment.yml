@@ -13,3 +13,4 @@ dependencies:
   - pandas=1.4.2
   - pysam=0.19.1
   - scipy=1.7.3
+  - joblib

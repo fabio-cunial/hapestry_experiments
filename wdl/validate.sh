@@ -3,6 +3,7 @@
 set -x
 WOMTOOL_PATH="/Users/fcunial/apps/cromwell/womtool-84.jar"
 
+java -jar ${WOMTOOL_PATH} validate -l BcftoolsMergeSvTrgt.wdl
 java -jar ${WOMTOOL_PATH} validate -l pav.wdl
 java -jar ${WOMTOOL_PATH} validate -l TrgtMerge.wdl
 java -jar ${WOMTOOL_PATH} validate -l Hifiasm.wdl

@@ -233,6 +233,28 @@ RUN wget https://github.com/tjiangHIT/cuteSV/archive/refs/tags/cuteSV-v${cutesv_
 #     && mv ./DeBreak-${debreak_version}/ ./debreak/ \
 #     && ./debreak/debreak --help
 
+# # PAV (tried but failed to make the latest version work with the AoU WDLs)
+# ARG pav_version=2.4.6
+# ARG svpop_commit=968993798c770ce279c72a3004bbace1d2053b72
+# RUN wget https://github.com/EichlerLab/pav/archive/refs/tags/v${pav_version}.tar.gz \
+#     && tar xzf v${pav_version}.tar.gz \
+#     && rm -f v${pav_version}.tar.gz \
+#     && mv pav-${pav_version} pav \
+#     && cd pav/dep \
+#     && git clone --recursive https://github.com/EichlerLab/svpop.git \
+#     && cd svpop \
+#     && git checkout ${svpop_commit} \
+#     && cd ../../.. \
+#     && mkdir -p /opt/ \
+#     && mv pav /opt/pav
+# COPY ./pav_environment.yml .
+# RUN conda env create -f pav_environment.yml \
+#     && conda clean -a
+# ENV PATH=/opt/conda/envs/lr-pav/bin/:${PATH}
+# COPY ./pav_test_install.py /tmp/
+# #SHELL ["conda", "run", "-n", "lr-pav", "/bin/bash", "-c"]
+# #RUN python /tmp/pav_test_install.py
+
 
 # ------------------------------- SV MERGERS -----------------------------------
 
@@ -269,27 +291,6 @@ RUN wget https://github.com/starskyzheng/panpop/archive/refs/tags/${panpop_versi
 # SHELL ["chmod", "+x", "/opt/conda/envs/jasmine/bin/jasmine"]
 # SHELL ["/bin/bash", "-c"]
 
-
-
-
-
-
-
-
-# PAV
-ARG pav_version=2.4.6
-RUN wget https://github.com/EichlerLab/pav/archive/refs/tags/v${pav_version}.tar.gz \
-    && tar xzf v${pav_version}.tar.gz \
-    && rm -f v${pav_version}.tar.gz \
-    && mkdir -p /opt/ \
-    && mv pav-${pav_version} /opt/pav
-COPY ./pav_environment.yml .
-RUN conda env create -f pav_environment.yml \
-    && conda clean -a
-ENV PATH=/opt/conda/envs/lr-pav/bin/:${PATH}
-COPY ./pav_test_install.py /tmp/
-#SHELL ["conda", "run", "-n", "lr-pav", "/bin/bash", "-c"]
-#RUN python /tmp/pav_test_install.py
 
 
 # ----------------------------- CUSTOM SCRIPTS ---------------------------------
