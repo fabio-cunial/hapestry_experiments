@@ -1,8 +1,8 @@
 version 1.0
 
 
-# Merges a normalized joint TRGT VCF with the joint normalized SV VCF created
-# by `BcftoolsMergeIntersample.wdl`.
+# Merges a normalized, non-multiallelic, cohort-level TRGT VCF, with the cohort-
+# level, normalized SV VCF created by `BcftoolsMergeIntersample.wdl`.
 #
 workflow BcftoolsMergeSvTrgt {
     input {

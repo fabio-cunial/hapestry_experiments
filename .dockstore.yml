@@ -141,3 +141,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/BcftoolsMergeSvTrgt.wdl  
+- name: ResolvePav
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/ResolvePav.wdl  
