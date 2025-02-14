@@ -260,6 +260,7 @@ RUN wget https://github.com/tjiangHIT/cuteSV/archive/refs/tags/cuteSV-v${cutesv_
 
 # TRUVARI
 ARG truvari_version=5.0.0
+# ARG truvari_version=4.3.1   # OLD TRUVARI, JUST TO MEASURE CHANGES.
 RUN pip3 install truvari==${truvari_version} \
     && truvari --help
 

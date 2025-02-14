@@ -18,6 +18,7 @@ workflow MapCCS {
         Int n_cpus
         Int ram_size_gb
         Int disk_gb
+        String docker = "fcunial/hapestry_experiments"
     }
     parameter_meta {
     }
@@ -30,7 +31,8 @@ workflow MapCCS {
             reads_fastq_gz = reads_fastq_gz,
             n_cpus = n_cpus,
             ram_size_gb = ram_size_gb,
-            disk_gb = disk_gb
+            disk_gb = disk_gb,
+            docker = docker
     }
     
     output {
@@ -49,6 +51,7 @@ task MapCCSImpl {
         Int n_cpus
         Int ram_size_gb
         Int disk_gb
+        String docker
     }
     parameter_meta {
     }
@@ -78,7 +81,7 @@ task MapCCSImpl {
         File output_bai = work_dir + "/" + sample_id + ".bam.bai"
     }
     runtime {
-        docker: "fcunial/hapestry_experiments"
+        docker: docker
         cpu: n_cpus
         memory: ram_size_gb + "GB"
         disks: "local-disk " + disk_size_gb + " HDD"
