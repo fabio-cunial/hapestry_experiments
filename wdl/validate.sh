@@ -3,6 +3,7 @@
 set -x
 WOMTOOL_PATH="/Users/fcunial/apps/cromwell/womtool-84.jar"
 
+java -jar ${WOMTOOL_PATH} validate -l BcftoolsMergeNoDuplicates.wdl
 java -jar ${WOMTOOL_PATH} validate -l ResolvePav.wdl
 java -jar ${WOMTOOL_PATH} validate -l BcftoolsMergeSvTrgt.wdl
 java -jar ${WOMTOOL_PATH} validate -l pav.wdl
@@ -23,7 +24,6 @@ java -jar ${WOMTOOL_PATH} validate -l BcftoolsMergeIntrasample.wdl
 java -jar ${WOMTOOL_PATH} validate -l Resolve.wdl
 java -jar ${WOMTOOL_PATH} validate -l BedtoolsMergeDipcall.wdl
 java -jar ${WOMTOOL_PATH} validate -l BcftoolsMergeDipcall.wdl
-java -jar ${WOMTOOL_PATH} validate -l BcftoolsMergeNoDuplicates.wdl
 java -jar ${WOMTOOL_PATH} validate -l Debreak.wdl
 java -jar ${WOMTOOL_PATH} validate -l Svim.wdl
 java -jar ${WOMTOOL_PATH} validate -l Nanovar.wdl

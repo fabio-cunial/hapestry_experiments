@@ -15,6 +15,8 @@ workflow BcftoolsMergeNoDuplicates {
         Array[File] caller2_tbi
         Array[File] caller3_vcf_gz
         Array[File] caller3_tbi
+        Array[File] caller4_vcf_gz
+        Array[File] caller4_tbi
         File reference_fa
         File reference_fai
         Int ram_gb_intersample = 200
@@ -26,8 +28,8 @@ workflow BcftoolsMergeNoDuplicates {
     scatter(i in range(length(caller1_vcf_gz))) {
         call IntraSampleMerge {
             input:
-                sample_vcf_gz = [caller1_vcf_gz[i], caller2_vcf_gz[i], caller3_vcf_gz[i]],
-                sample_tbi = [caller1_tbi[i], caller2_tbi[i], caller3_tbi[i]],
+                sample_vcf_gz = [caller1_vcf_gz[i], caller2_vcf_gz[i], caller3_vcf_gz[i], caller4_vcf_gz[i]],
+                sample_tbi = [caller1_tbi[i], caller2_tbi[i], caller3_tbi[i], caller4_tbi[i]],
                 reference_fa = reference_fa,
                 reference_fai = reference_fai,
                 compression_level = compression_level
