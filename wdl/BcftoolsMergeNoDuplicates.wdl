@@ -95,7 +95,7 @@ task IntraSampleMerge {
     Int disk_size_gb = 10*ceil(size(sample_vcf_gz, "GB")) + 10
     String docker_dir = "/hapestry"
     String work_dir = "/cromwell_root/hapestry"
-    Int ram_gb = 4
+    Int ram_gb = 16
     
     command <<<
         set -euxo pipefail
