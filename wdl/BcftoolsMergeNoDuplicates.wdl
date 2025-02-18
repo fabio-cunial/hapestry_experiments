@@ -116,6 +116,8 @@ task IntraSampleMerge {
             local INPUT_VCF_GZ=$1
             local OUTPUT_VCF=$2
             
+            ${TIME_COMMAND} tabix -f ${INPUT_VCF_GZ}
+            
             # - Restricting to standard chromosomes
             # - Ensuring that the input file is sorted
             ${TIME_COMMAND} bcftools view ${INPUT_VCF_GZ} $(echo ${REGIONS}) | bcftools sort --max-mem ${EFFECTIVE_RAM_GB}G --output-type z > tmp0.vcf.gz
