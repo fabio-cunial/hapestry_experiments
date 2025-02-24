@@ -208,14 +208,16 @@ RUN wget https://github.com/tjiangHIT/cuteSV/archive/refs/tags/cuteSV-v${cutesv_
 #     && cd NanoVar-${nanovar_version} \
 #     && pip install .
     
-# # SVIM
-# ARG svim_version=2.0.0
-# RUN wget https://github.com/eldariont/svim/archive/refs/tags/v${svim_version}.tar.gz \
-#     && tar xzf v${svim_version}.tar.gz \
-#     && rm -f v${svim_version}.tar.gz \
-#     && cd svim-${svim_version} \
-#     && pip install . \
-#     && svim --help
+# SVIM
+ARG svim_version=2.0.0
+RUN wget https://github.com/eldariont/svim/archive/refs/tags/v${svim_version}.tar.gz \
+    && tar xzf v${svim_version}.tar.gz \
+    && rm -f v${svim_version}.tar.gz \
+    && cd svim-${svim_version} \
+    && pip install . \
+    && svim --help
+# Bypassing the final plotting, since it throws an error.
+COPY ./svim /opt/conda/bin/svim
 
 # # WTDBG2 (for debreak)
 # ARG wtdbg2_version=2.5

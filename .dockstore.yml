@@ -145,3 +145,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/ResolvePav.wdl  
+- name: FilterSvim
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/FilterSvim.wdl

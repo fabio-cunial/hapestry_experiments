@@ -1,14 +1,6 @@
 version 1.0
 
 
-# Performance on a machine with 16 cores and 32 GB of RAM, HG002,
-# min_sv_length=10:
-#
-# COVERAGE  TIME    %CPU    RAM
-# 4x        
-# 8x        
-# 16x       
-# 32x       
 #
 workflow Svim {
     input {
@@ -39,6 +31,15 @@ workflow Svim {
 }
 
 
+# Performance on a machine with 16 cores and 32 GB of RAM, HG002,
+# min_sv_length=10:
+#
+# COVERAGE  TIME    %CPU    RAM
+# 4x        10m     100%    3.4G
+# 8x        30m     100%    4.3G
+# 16x       
+# 32x       1h10m   100%    5.2G
+#
 task SvimImpl {
     input {
         String sample_id
