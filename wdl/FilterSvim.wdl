@@ -51,7 +51,7 @@ task FilterSvimImpl {
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
         N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
 
-        ${TIME_COMMAND} bcftools view --threads ${N_THREADS} --include ~{filter_string} --output-type z ~{input_vcf_gz} > ~{sample_id}_filtered.vcf.gz
+        ${TIME_COMMAND} bcftools filter --threads ${N_THREADS} --include ~{filter_string} --output-type z ~{input_vcf_gz} > ~{sample_id}_filtered.vcf.gz
         tabix -f filtered.vcf.gz
     >>>
     
