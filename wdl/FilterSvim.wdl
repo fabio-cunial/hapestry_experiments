@@ -52,7 +52,7 @@ task FilterSvimImpl {
         N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
 
         ${TIME_COMMAND} bcftools filter --threads ${N_THREADS} --include ~{filter_string} --output-type z ~{input_vcf_gz} > ~{sample_id}_filtered.vcf.gz
-        tabix -f filtered.vcf.gz
+        tabix -f ~{sample_id}_filtered.vcf.gz
     >>>
     
     output {
