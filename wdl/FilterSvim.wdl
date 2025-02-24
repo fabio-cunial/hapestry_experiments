@@ -6,6 +6,7 @@ workflow FilterSvim {
     input {
         String sample_id
         File input_vcf_gz
+        File input_tbi
         String filter_string = ""
     }
     parameter_meta {
@@ -16,6 +17,7 @@ workflow FilterSvim {
         input:
             sample_id = sample_id,
             input_vcf_gz = input_vcf_gz,
+            input_tbi = input_tbi,
             filter_string = filter_string
     }
     
@@ -30,6 +32,7 @@ task FilterSvimImpl {
     input {
         String sample_id
         File input_vcf_gz
+        File input_tbi
         String filter_string
     }
     
