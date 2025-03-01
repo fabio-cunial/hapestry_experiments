@@ -96,13 +96,14 @@ task JasmineImpl {
             bcftools filter --include "INFO/SVLEN>=-~{max_sv_length} && INFO/SVLEN<=~{max_sv_length}" --output-type v ~{bcftools_merge_vcf_gz} > tmp1.vcf
         fi
         rm -f ~{bcftools_merge_vcf_gz}
+        echo tmp1.vcf > list.txt
         
-        # - Making all DELs and INVs symbolic to speed up Jasmine. Without this,
-        #   in degenerate cases it takes hours to intra-sample merge on a
-        #   reasonably-sized cloud VM, even with SSD.
-        python ~{docker_dir}/symbolic_jasmine.py tmp1.vcf > input.vcf
-        rm -f tmp1.vcf
-        echo "input.vcf" > list.txt
+        ## - Making all DELs and INVs symbolic to speed up Jasmine. Without this,
+        ##   in degenerate cases it takes hours to intra-sample merge on a
+        ##   reasonably-sized cloud VM, even with SSD.
+        #python ~{docker_dir}/symbolic_jasmine.py tmp1.vcf > input.vcf
+        #rm -f tmp1.vcf
+        #echo "input.vcf" > list.txt
         
         # - Using `--output_genotypes` on a bcftools merge VCF with only one
         #   sample leads to a NullPointerException:
