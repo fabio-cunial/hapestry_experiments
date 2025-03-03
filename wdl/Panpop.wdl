@@ -37,6 +37,13 @@ workflow Panpop {
 }
 
 
+# Performance on a VM with 16 cores and 16GB of RAM:
+#
+# COVERAGE  CPU     RAM     TIME
+# 4x        600%    3G      2m
+# 8x        1200%   3G      3m
+# 16x       1200%   9G      3m
+# 32x       1300%   9G      5m
 #
 task PanpopImpl {
     input {
