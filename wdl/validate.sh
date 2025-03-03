@@ -3,6 +3,7 @@
 set -x
 WOMTOOL_PATH="/Users/fcunial/apps/cromwell/womtool-84.jar"
 
+java -jar ${WOMTOOL_PATH} validate -l KanpigGenotypeAndFilter.wdl
 java -jar ${WOMTOOL_PATH} validate -l BuildTrainingResourceIntersample.wdl
 java -jar ${WOMTOOL_PATH} validate -l FilterSvim.wdl
 java -jar ${WOMTOOL_PATH} validate -l BcftoolsMergeNoDuplicates.wdl

@@ -294,6 +294,15 @@ RUN wget https://github.com/starskyzheng/panpop/archive/refs/tags/${panpop_versi
 # SHELL ["chmod", "+x", "/opt/conda/envs/jasmine/bin/jasmine"]
 # SHELL ["/bin/bash", "-c"]
 
+# ------------------------------ SV GENOTYPERS ---------------------------------
+
+ARG kanpig_version=1.0.2
+RUN wget https://github.com/ACEnglish/kanpig/releases/download/v${kanpig_version}/kanpig-v${kanpig_version}-x86_64-unknown-linux-musl.tar.gz \
+    && tar xzf kanpig-v${kanpig_version}-x86_64-unknown-linux-musl.tar.gz \
+    && ls -laht kanpig-v${kanpig_version}-x86_64-unknown-linux-musl \
+    && mv ./kanpig-v${kanpig_version}-x86_64-unknown-linux-musl/kanpig . \
+    && chmod +x ./kanpig \
+    && ./kanpig --help
 
 
 # ----------------------------- CUSTOM SCRIPTS ---------------------------------

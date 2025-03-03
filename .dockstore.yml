@@ -149,3 +149,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/FilterSvim.wdl
+- name: KanpigGenotypeAndFilter
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/KanpigGenotypeAndFilter.wdl
