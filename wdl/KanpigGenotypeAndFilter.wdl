@@ -64,7 +64,6 @@ task RemoveSamples {
     
     String docker_dir = "/hapestry"
     String work_dir = "/cromwell_root/hapestry"
-    Int disk_size_gb = 40*ceil(size(intersample_vcf_gz, "GB"))
     
     command <<<
         set -euxo pipefail
@@ -95,8 +94,8 @@ task RemoveSamples {
     runtime {
         docker: "fcunial/hapestry_experiments"
         cpu: 1
-        memory: "16GB"
-        disks: "local-disk " + disk_size_gb + " HDD"
+        memory: "8GB"
+        disks: "local-disk 256 HDD"
         preemptible: 0
     }
 }
