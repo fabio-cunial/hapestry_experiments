@@ -95,7 +95,7 @@ task RemoveSamples {
     runtime {
         docker: "fcunial/hapestry_experiments"
         cpu: 1
-        memory: "8GB"
+        memory: "16GB"
         disks: "local-disk " + disk_size_gb + " HDD"
         preemptible: 0
     }
