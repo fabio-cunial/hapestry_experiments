@@ -185,6 +185,7 @@ task Merge {
     }
     
     String work_dir = "/cromwell_root/hapestry"
+    Int disk_size_gb = 20*ceil(size(regenotyped_vcfs,"GB"))
     
     command <<<
         set -euxo pipefail
@@ -278,7 +279,7 @@ task Merge {
     runtime {
         docker: "fcunial/hapestry_experiments"
         cpu: n_cpus
-        disks: "local-disk 128 HDD"
+        disks: "local-disk " + disk_size_gb + " HDD"
         preemptible: 0
     }
 }
