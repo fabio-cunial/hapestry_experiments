@@ -256,7 +256,7 @@ task Merge {
         head -n $(( ${N_ROWS} - 1 )) tmp.txt > header.txt
         tail -n 1 tmp.txt | cut -f 1,2,3,4,5,6,7,8,9 > fields.txt
         bcftools view --no-header ~{intersample_vcf_gz} | cut -f 1,2,3,4,5,6,7,8 > calls.txt
-        paste calls.txt ~{format_column} > calls2.txt
+        ${TIME_COMMAND} paste calls.txt ~{format_column} > calls2.txt
         rm -f calls.txt
         mv calls2.txt calls.txt
         
