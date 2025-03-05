@@ -99,7 +99,7 @@ task RemoveSamples {
         docker: "fcunial/hapestry_experiments"
         cpu: 1
         memory: "32GB"
-        disks: "local-disk 256 HDD"
+        disks: "local-disk 256 SSD"
         preemptible: 0
     }
 }
@@ -285,7 +285,7 @@ task Merge {
         paste calls.txt ${COLUMNS_FILES} > body.txt
         cat header.txt fields_all.txt body.txt > merged.vcf
         rm -f *.txt
-        ${TIME_COMMAND} bgzip -@ ${N_THREADS} merged.vcf
+        ${TIME_COMMAND} bgzip -@ ${N_THREADS} --compress-level 1 merged.vcf
         tabix -f merged.vcf.gz
         
         # Keeping all and only the records that occur at least once in some
