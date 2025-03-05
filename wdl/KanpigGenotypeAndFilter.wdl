@@ -262,7 +262,7 @@ task Merge {
         
         # Appending the sample columns
         N_ROWS=$(wc -l < list.txt)
-        N_ROWS=$(( ${N_ROWS} / ${N_THREADS} ))
+        N_ROWS=$(( (${N_ROWS}+${N_THREADS}-1)/${N_THREADS} ))  # Ceiling
         split -d -l ${N_ROWS} list.txt list_
         COLUMNS_FILES=""; FIELDS_FILES=""
         for LIST_FILE in $(find . -maxdepth 1 -name 'list_*' | sort); do
