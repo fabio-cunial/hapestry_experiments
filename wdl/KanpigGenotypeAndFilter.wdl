@@ -8,6 +8,7 @@ workflow KanpigGenotypeAndFilter {
     input {
         File intersample_vcf_gz
         File intersample_tbi
+        Array[String] sample_id
         Array[Boolean] is_male
         Array[File] alignments_bam
         Array[File] alignments_bai
@@ -27,6 +28,7 @@ workflow KanpigGenotypeAndFilter {
     scatter(i in range(length(alignments_bam))) {
         call Kanpig {
             input:
+                sample_id = sample_id[i],
                 is_male = is_male[i],
                 input_vcf_gz = RemoveSamples.cleaned_vcf_gz,
                 input_tbi = RemoveSamples.cleaned_tbi,
@@ -40,7 +42,9 @@ workflow KanpigGenotypeAndFilter {
     }
     call Merge {
         input:
-            regenotyped_vcfs = Kanpig.regenotyped_kanpig
+            intersample_vcf_gz = RemoveSamples.cleaned_vcf_gz,
+            format_column = Kanpig.regenotyped_format[0],
+            gt_columns = Kanpig.regenotyped_gt
     }
     output {
         File output_vcf_gz = Merge.output_vcf_gz
@@ -105,6 +109,7 @@ task RemoveSamples {
 #
 task Kanpig {
     input {
+        String sample_id
         Boolean is_male
         File input_vcf_gz
         File input_tbi
@@ -146,13 +151,19 @@ task Kanpig {
         fi
         export RUST_BACKTRACE="full"
         ${TIME_COMMAND} ~{docker_dir}/kanpig gt --threads $(( ${N_THREADS} - 1)) --ploidy-bed ${PLOIDY_BED} ~{kanpig_params_multisample} --reference ~{reference_fa} --input ~{input_vcf_gz} --reads ~{alignments_bam} --out tmp1.vcf.gz
-        bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z tmp1.vcf.gz > ~{output_prefix}.vcf.gz
-        tabix -f ~{output_prefix}.vcf.gz
+        bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z tmp1.vcf.gz > tmp2.vcf.gz
+        tabix -f tmp2.vcf.gz
+        rm -f tmp1.vcf.gz*
+        
+        # Outputting just the FORMAT and GT columns
+        bcftools view --threads ${N_THREADS} --no-header tmp2.vcf.gz | cut -f 9 >> format.txt
+        echo ~{sample_id} > gt.txt
+        bcftools view --threads ${N_THREADS} --no-header tmp2.vcf.gz | cut -f 10 >> gt.txt
     >>>
 
     output {
-        File regenotyped_kanpig = work_dir + "/" + output_prefix + ".vcf.gz"
-        File regenotyped_kanpig_tbi = work_dir + "/" + output_prefix + ".vcf.gz.tbi"
+        File regenotyped_gt = work_dir + "/gt.txt"
+        File regenotyped_format = work_dir + "/format.txt"
     }
     runtime {
         docker: "fcunial/hapestry_experiments"
@@ -178,14 +189,18 @@ task Kanpig {
 #
 task Merge {
     input {
-        Array[File] regenotyped_vcfs
+        File intersample_vcf_gz
+        File format_column
+        Array[File] gt_columns
         Int n_cpus = 8
     }
     parameter_meta {
+        intersample_vcf_gz: "The input to kanpig."
+        format_column: "A FORMAT column from the output of kanpig (header NOT included)."
+        gt_columns: "Just the GT column from the output of kanpig. The first line must be the sample ID."
     }
     
     String work_dir = "/cromwell_root/hapestry"
-    Int disk_size_gb = 20*ceil(size(regenotyped_vcfs,"GB"))
     
     command <<<
         set -euxo pipefail
@@ -207,10 +222,7 @@ task Merge {
             while read ADDRESS; do
                 i=$(( $i + 1 ))
                 # Adding the new sample to the set of columns
-                cp ${ADDRESS} ${TMP_PREFIX}.vcf.gz
-                bcftools view --header-only ${TMP_PREFIX}.vcf.gz > ${TMP_PREFIX}.txt
-                N_ROWS=$(wc -l < ${TMP_PREFIX}.txt)
-                tail -n 1 ${TMP_PREFIX}.txt | cut -f 10 > sample_${THREAD_ID}.txt
+                head -n 1 ${ADDRESS} > sample_${THREAD_ID}.txt
                 if [ $i = "1" ]; then
                     mv sample_${THREAD_ID}.txt ${FIELDS_FILE}
                 else
@@ -219,7 +231,7 @@ task Merge {
                 fi
                 echo "Current fields of thread ${THREAD_ID}:"; cat ${FIELDS_FILE}
                 # Adding the new column to the body
-                bcftools view --no-header ${TMP_PREFIX}.vcf.gz | cut -f 10 > ${TMP_PREFIX}.txt
+                tail -n +2 ${ADDRESS} > ${TMP_PREFIX}.txt
                 if [ $i = "1" ]; then
                     mv ${TMP_PREFIX}.txt ${OUTPUT_FILE}
                 else
@@ -228,27 +240,27 @@ task Merge {
                 fi
             done < list_${THREAD_ID}
         }
-        
+
         
         # Main program
-        INPUT_FILES=~{sep=',' regenotyped_vcfs}
+        INPUT_FILES=~{sep=',' gt_columns}
         INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
         rm -f list.txt
         for INPUT_FILE in ${INPUT_FILES}; do
             echo ${INPUT_FILE} >> list.txt
         done
         
-        # Initializing the inter-sample VCF with the first file
-        ADDRESS=$(head -n 1 list.txt)
-        mv ${ADDRESS} first.vcf.gz
-        bcftools view --header-only first.vcf.gz > tmp.txt
+        # Initializing the inter-sample VCF
+        bcftools view --header-only ~{intersample_vcf_gz} > tmp.txt
         N_ROWS=$(wc -l < tmp.txt)
         head -n $(( ${N_ROWS} - 1 )) tmp.txt > header.txt
         tail -n 1 tmp.txt | cut -f 1,2,3,4,5,6,7,8,9 > fields.txt
-        bcftools view --no-header first.vcf.gz | cut -f 1,2,3,4,5,6,7,8,9 > calls.txt
-        rm -f first.vcf.gz
+        bcftools view --no-header ~{intersample_vcf_gz} | cut -f 1,2,3,4,5,6,7,8 > calls.txt
+        paste calls.txt ~{format_column} > calls2.txt
+        rm -f calls.txt
+        mv calls2.txt calls.txt
         
-        # Appending all the remaining files
+        # Appending the sample columns
         N_ROWS=$(wc -l < list.txt)
         N_ROWS=$(( ${N_ROWS} / ${N_THREADS} ))
         split -d -l ${N_ROWS} list.txt list_
@@ -267,7 +279,8 @@ task Merge {
         ${TIME_COMMAND} bgzip -@ ${N_THREADS} merged.vcf
         tabix -f merged.vcf.gz
         
-        # Keeping only the records that occur at least once in some sample
+        # Keeping all and only the records that occur at least once in some
+        # sample
         ${TIME_COMMAND} bcftools filter --threads ${N_THREADS} --include 'COUNT(GT="0/1" || GT="0|1" || GT="1/0" || GT="1|0" || GT="1/1" || GT="1|1")>0' --output-type z merged.vcf.gz > filtered.vcf.gz
         tabix -f filtered.vcf.gz
     >>>
@@ -279,7 +292,7 @@ task Merge {
     runtime {
         docker: "fcunial/hapestry_experiments"
         cpu: n_cpus
-        disks: "local-disk " + disk_size_gb + " HDD"
+        disks: "local-disk 100 HDD"
         preemptible: 0
     }
 }
