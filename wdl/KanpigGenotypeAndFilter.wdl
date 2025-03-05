@@ -302,7 +302,7 @@ task Merge {
         docker: "fcunial/hapestry_experiments"
         cpu: n_cpus
         memory: "32GB"
-        disks: "local-disk 100 HDD"
+        disks: "local-disk 100 SSD"
         preemptible: 0
     }
 }
