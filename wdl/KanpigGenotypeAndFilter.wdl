@@ -254,6 +254,15 @@ task Merge {
         bcftools view --header-only ~{intersample_vcf_gz} > tmp.txt
         N_ROWS=$(wc -l < tmp.txt)
         head -n $(( ${N_ROWS} - 1 )) tmp.txt > header.txt
+        echo -e "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Kanplug genotype\">" >> header.txt
+        echo -e "##FORMAT=<ID=FT,Number=1,Type=Integer,Description=\"Kanpig filter\">" >> header.txt
+        echo -e "##FORMAT=<ID=SQ,Number=1,Type=Integer,Description=\"Phred scaled quality of sample being non-ref at this variant\">" >> header.txt
+        echo -e "##FORMAT=<ID=GQ,Number=1,Type=Integer,Description=\"Phred scaled quality of genotype\">" >> header.txt
+        echo -e "##FORMAT=<ID=PS,Number=1,Type=Integer,Description=\"Local phase group of entries\">" >> header.txt
+        echo -e "##FORMAT=<ID=NE,Number=1,Type=Integer,Description=\"Neighborhood id of variants evaluated together for short-range phasing\">" >> header.txt
+        echo -e "##FORMAT=<ID=DP,Number=1,Type=Integer,Description=\"Coverage over region\">" >> header.txt
+        echo -e "##FORMAT=<ID=AD,Number=R,Type=Integer,Description=\"Coverage for reference and alternate alleles\">" >> header.txt
+        echo -e "##FORMAT=<ID=KS,Number=.,Type=Integer,Description=\"Kanpig score\">" >> header.txt
         tail -n 1 tmp.txt | cut -f 1,2,3,4,5,6,7,8,9 > fields.txt
         bcftools view --no-header ~{intersample_vcf_gz} | cut -f 1,2,3,4,5,6,7,8 > calls.txt
         ${TIME_COMMAND} paste calls.txt ~{format_column} > calls2.txt
