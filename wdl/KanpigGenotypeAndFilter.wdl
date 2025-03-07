@@ -16,6 +16,7 @@ workflow KanpigGenotypeAndFilter {
         File reference_fai
         File ploidy_bed_female
         File ploidy_bed_male
+        Int min_sv_length = 10
     }
     parameter_meta {
     }
@@ -37,7 +38,8 @@ workflow KanpigGenotypeAndFilter {
                 reference_fa = reference_fa,
                 reference_fai = reference_fai,
                 ploidy_bed_female = ploidy_bed_female,
-                ploidy_bed_male = ploidy_bed_male
+                ploidy_bed_male = ploidy_bed_male,
+                min_sv_length = min_sv_length
         }
     }
     call Merge {
@@ -87,7 +89,7 @@ task RemoveSamples {
         echo -e "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSAMPLE" >> cleaned.vcf
         bcftools view --no-header ~{intersample_vcf_gz} | awk 'BEGIN { i=0; } { gsub(/;/,"_",$3); printf("%s\t%s\t%d\t%s\t%s\t%s\t%s\t%s;ORIGINAL_ID=%s\tGT\t0/1\n",$1,$2,++i,$4,$5,$6,$7,$8,$3); }' >> cleaned.vcf
         rm -f ~{intersample_vcf_gz}
-        bgzip -@ ${N_THREADS} cleaned.vcf
+        bgzip -@ ${N_THREADS} --compress-level 1 cleaned.vcf
         tabix -f cleaned.vcf.gz
     >>>
 
@@ -121,6 +123,7 @@ task Kanpig {
         Int ram_size_gb = 32
         File ploidy_bed_female
         File ploidy_bed_male
+        Int min_sv_length
     }
     parameter_meta {
     }
@@ -128,7 +131,7 @@ task Kanpig {
     String docker_dir = "/hapestry"
     String work_dir = "/cromwell_root/hapestry"
     String output_prefix = "kanpig_regenotyped"
-    String kanpig_params_multisample =  "--sizemin 50 --sizemax 10000 --neighdist  500 --gpenalty 0.04 --hapsim 0.97"
+    String kanpig_params_multisample =  "--sizemin ~{min_sv_length} --sizemax 10000 --neighdist 500 --gpenalty 0.04 --hapsim 0.97"
     Int disk_size_gb = 200 + ceil(size(reference_fa,"GB")) + 100*ceil(size(input_vcf_gz,"GB")) + 2*ceil(size(alignments_bam,"GB"))
 
     command <<<
