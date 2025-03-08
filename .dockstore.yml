@@ -153,3 +153,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/KanpigGenotypeAndFilter.wdl
+- name: ExtractSamples
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/ExtractSamples.wdl
