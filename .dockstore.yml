@@ -157,3 +157,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/ExtractSamples.wdl
+- name: AlignONT
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/AlignONT.wdl
