@@ -161,3 +161,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/AlignONT.wdl
+- name: FilterLength
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/FilterLength.wdl
