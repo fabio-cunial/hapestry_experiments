@@ -169,3 +169,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/ExtractSample.wdl
+- name: BcftoolsMergeNoDuplicatesSingleCaller
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/BcftoolsMergeNoDuplicatesSingleCaller.wdl
