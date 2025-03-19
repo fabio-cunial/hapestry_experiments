@@ -165,3 +165,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/FilterLength.wdl
+- name: ExtractSample
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/ExtractSample.wdl

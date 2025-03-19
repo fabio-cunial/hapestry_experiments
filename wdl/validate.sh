@@ -3,6 +3,7 @@
 set -x
 WOMTOOL_PATH="/Users/fcunial/apps/cromwell/womtool-84.jar"
 
+java -jar ${WOMTOOL_PATH} validate -l ExtractSample.wdl
 java -jar ${WOMTOOL_PATH} validate -l FilterLength.wdl
 java -jar ${WOMTOOL_PATH} validate -l AlignONT.wdl
 java -jar ${WOMTOOL_PATH} validate -l ExtractSamples.wdl
