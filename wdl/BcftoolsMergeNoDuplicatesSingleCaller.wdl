@@ -55,8 +55,7 @@ workflow BcftoolsMergeNoDuplicatesSingleCaller {
 # Remark: we do not consider STRAND in the above.
 #
 # Remark: symbolic ALTs in the output VCF are not necessarily identical to the
-# symbolic ALTs in the input, and the input genotypes are discarded (i.e. the
-# output contains artificial FORMAT and SAMPLE columns where all calls are 0/1).
+# symbolic ALTs in the input. The original genotypes are preserved.
 #
 # Performance on each AoU 8x sample:
 # COMMAND           RUNTIME     N_CPUS      MAX_RSS
@@ -147,16 +146,12 @@ task IntraSampleMerge {
         # Cleaning the single-caller VCF
         cleanVCF ~{sample_vcf_gz} cleaned.vcf
         
-        # Removing GTs
+        # Keeping the original GTs
         bcftools view --header-only cleaned.vcf.gz > header.txt
         N_ROWS=$(wc -l < header.txt)
         head -n $(( ${N_ROWS} - 1 )) header.txt > out.vcf
         echo -e "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t~{sample_id}" >> out.vcf
-        ${TIME_COMMAND} bcftools view --no-header cleaned.vcf.gz | awk '{ \
-            printf("%s",$1); \
-            for (i=2; i<=8; i++) printf("\t%s",$i); \
-            printf("\tGT\t0/1\n"); \
-        }' >> out.vcf
+        ${TIME_COMMAND} bcftools view --no-header cleaned.vcf.gz >> out.vcf
         ${TIME_COMMAND} bgzip --threads ${N_THREADS} --compress-level ~{compression_level} out.vcf
         tabix -f out.vcf.gz
         ls -laht; tree
@@ -176,10 +171,6 @@ task IntraSampleMerge {
 }
 
 
-# Remark: since the input comes from $IntraSampleMerge$, which overwrites GTs,
-# every call in the output of this procedure has at least one sample with
-# GT=0/1, and every sample has GT \in {0/1, ./.}.
-#
 # Performance on 1074 AoU 8x samples:
 # COMMAND           RUNTIME     N_CPUS      MAX_RSS
 # bcftools merge    2.5h        2           140G
