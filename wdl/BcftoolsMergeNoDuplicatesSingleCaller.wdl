@@ -9,6 +9,7 @@ version 1.0
 #
 workflow BcftoolsMergeNoDuplicatesSingleCaller {
     input {
+        Array[String] sample_id
         Array[File] vcf_gz
         Array[File] tbi
         File reference_fa
@@ -22,6 +23,7 @@ workflow BcftoolsMergeNoDuplicatesSingleCaller {
     scatter(i in range(length(vcf_gz))) {
         call IntraSampleMerge {
             input:
+                sample_id = sample_id[i],
                 sample_vcf_gz = vcf_gz[i],
                 sample_tbi = tbi[i],
                 reference_fa = reference_fa,
@@ -68,6 +70,7 @@ workflow BcftoolsMergeNoDuplicatesSingleCaller {
 #
 task IntraSampleMerge {
     input {
+        String sample_id
         File sample_vcf_gz
         File sample_tbi
         File reference_fa
@@ -148,7 +151,7 @@ task IntraSampleMerge {
         bcftools view --header-only cleaned.vcf.gz > header.txt
         N_ROWS=$(wc -l < header.txt)
         head -n $(( ${N_ROWS} - 1 )) header.txt > out.vcf
-        echo -e "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t${SAMPLE_ID}" >> out.vcf
+        echo -e "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t~{sample_id}" >> out.vcf
         ${TIME_COMMAND} bcftools view --no-header cleaned.vcf.gz | awk '{ \
             printf("%s",$1); \
             for (i=2; i<=8; i++) printf("\t%s",$i); \
