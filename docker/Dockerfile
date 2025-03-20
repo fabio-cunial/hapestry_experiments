@@ -304,6 +304,15 @@ RUN wget https://github.com/ACEnglish/kanpig/releases/download/v${kanpig_version
     && chmod +x ./kanpig \
     && ./kanpig --help
 
+# ---------------------------------- PHASERS -----------------------------------
+
+ARG hiphase_version=1.4.5
+RUN wget https://github.com/PacificBiosciences/HiPhase/releases/download/v${hiphase_version}/hiphase-v${hiphase_version}-x86_64-unknown-linux-gnu.tar.gz \
+    && tar -xzf hiphase-v${hiphase_version}-x86_64-unknown-linux-gnu.tar.gz \
+    && mv hiphase-v${hiphase_version}-x86_64-unknown-linux-gnu/hiphase ./hiphase \
+    && chmod +x ./hiphase \
+    && ./hiphase -h
+
 
 # ----------------------------- CUSTOM SCRIPTS ---------------------------------
 COPY *.java .

@@ -173,3 +173,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/BcftoolsMergeNoDuplicatesSingleCaller.wdl
+- name: Hiphase
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/Hiphase.wdl
