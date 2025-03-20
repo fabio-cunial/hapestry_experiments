@@ -102,7 +102,7 @@ task HiphaseImpl {
         tabix -p vcf ~{samplename}_phased_snp.sorted.vcf.gz
         ${TIME_COMMAND} bcftools sort ~{samplename}_phased_sv.vcf.gz -O z -o ~{samplename}_phased_sv.sorted.vcf.gz
         tabix -p vcf ~{samplename}_phased_sv.sorted.vcf.gz
-        ${TIME_COMMAND} bcftools concat --threads ${N_THREADS}--allow-overlaps --remove-duplicates --output-type z ~{samplename}_phased_snp.sorted.vcf.gz ~{samplename}_phased_sv.sorted.vcf.gz > ~{samplename}_merged.vcf.gz
+        ${TIME_COMMAND} bcftools concat --threads ${N_THREADS} --allow-overlaps --remove-duplicates --output-type z ~{samplename}_phased_snp.sorted.vcf.gz ~{samplename}_phased_sv.sorted.vcf.gz > ~{samplename}_merged.vcf.gz
         tabix -f ~{samplename}_merged.vcf.gz
     >>>
     
