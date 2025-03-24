@@ -1,22 +1,17 @@
 version 1.0
 
 
-# Performs a trivial bcftools merge of multiple samples with multiple callers
-# per sample. The output VCF contains no multiallelic records and no exact
+# Performs a trivial bcftools merge of multiple samples with one caller per
+# sample. The output VCF contains no multiallelic records and no exact
 # duplicates.
 #
 # Remark: task $InterSampleMerge$ should be made parallel by chromosome.
 #
-workflow BcftoolsMergeNoDuplicates {
+workflow BcftoolsMergeNoDuplicatesSingleCaller {
     input {
-        Array[File] caller1_vcf_gz
-        Array[File] caller1_tbi
-        Array[File] caller2_vcf_gz
-        Array[File] caller2_tbi
-        Array[File] caller3_vcf_gz
-        Array[File] caller3_tbi
-        Array[File] caller4_vcf_gz
-        Array[File] caller4_tbi
+        Array[String] sample_id
+        Array[File] vcf_gz
+        Array[File] tbi
         File reference_fa
         File reference_fai
         Int ram_gb_intersample = 200
@@ -25,11 +20,12 @@ workflow BcftoolsMergeNoDuplicates {
     parameter_meta {
     }
     
-    scatter(i in range(length(caller1_vcf_gz))) {
+    scatter(i in range(length(vcf_gz))) {
         call IntraSampleMerge {
             input:
-                sample_vcf_gz = [caller1_vcf_gz[i], caller2_vcf_gz[i], caller3_vcf_gz[i], caller4_vcf_gz[i]],
-                sample_tbi = [caller1_tbi[i], caller2_tbi[i], caller3_tbi[i], caller4_tbi[i]],
+                sample_id = sample_id[i],
+                sample_vcf_gz = vcf_gz[i],
+                sample_tbi = tbi[i],
                 reference_fa = reference_fa,
                 reference_fai = reference_fai,
                 compression_level = compression_level
@@ -50,26 +46,16 @@ workflow BcftoolsMergeNoDuplicates {
 }
 
 
-# Remark: we use $bcftools merge$ instead of $bcftools concat$, since we must
-# collapse identical calls made by different callers (otherwise they would
-# remain in the inter-sample VCF, since the inter-sample $bcftools merge$ does
-# not collapse records from the same sample).
-#
 # Remark: $bcftools merge$ collapses into the same record every record with the
 # same $CHR,POS,REF,ALT$, disregarding the INFO field and in particular 
 # differences in SVLEN and END. This may delete information for symbolic
 # ALTs. Our script makes sure that only symbolic records with the same SVLEN and
 # END are collapsed into the same record.
 #
-# Remark: we do not consider STRAND in the above. STRAND info is removed from
-# the output, since it might be impossible to merge STRAND fields from different
-# callers.
+# Remark: we do not consider STRAND in the above.
 #
-# Remark: symbolic ALT records in the output VCF are not necessarily identical
-# to the corresponding symbolic ALT records in the input.
-#
-# Remark: the input genotypes are discarded: the output contains artificial
-# FORMAT and SAMPLE columns where every call is 0/1.
+# Remark: symbolic ALTs in the output VCF are not necessarily identical to the
+# symbolic ALTs in the input. The original genotypes are preserved.
 #
 # Performance on each AoU 8x sample:
 # COMMAND           RUNTIME     N_CPUS      MAX_RSS
@@ -83,8 +69,9 @@ workflow BcftoolsMergeNoDuplicates {
 #
 task IntraSampleMerge {
     input {
-        Array[File] sample_vcf_gz
-        Array[File] sample_tbi
+        String sample_id
+        File sample_vcf_gz
+        File sample_tbi
         File reference_fa
         File reference_fai
         Int compression_level = 1
@@ -95,7 +82,7 @@ task IntraSampleMerge {
     Int disk_size_gb = 10*ceil(size(sample_vcf_gz, "GB")) + 10
     String docker_dir = "/hapestry"
     String work_dir = "/cromwell_root/hapestry"
-    Int ram_gb = 16
+    Int ram_gb = 4
     
     command <<<
         set -euxo pipefail
@@ -107,23 +94,16 @@ task IntraSampleMerge {
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
         N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         EFFECTIVE_RAM_GB=$(( ~{ram_gb} - 2 ))
-        REGIONS=""
-        for i in $(seq 1 22) X Y M; do
-            REGIONS="${REGIONS} chr${i}"
-        done
         
         function cleanVCF() {
             local INPUT_VCF_GZ=$1
             local OUTPUT_VCF=$2
             
-            ${TIME_COMMAND} tabix -f ${INPUT_VCF_GZ}
-            
-            # - Restricting to standard chromosomes
             # - Ensuring that the input file is sorted
-            ${TIME_COMMAND} bcftools view ${INPUT_VCF_GZ} $(echo ${REGIONS}) | bcftools sort --max-mem ${EFFECTIVE_RAM_GB}G --output-type z > tmp0.vcf.gz
+            ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_RAM_GB}G --output-type z ${INPUT_VCF_GZ} > tmp0.vcf.gz
             tabix -f tmp0.vcf.gz
             
-            # - Normalizing multiallelic records.
+            # - Removing multiallelic records.
             # - Fixing wrong REF values (which may occur e.g. in sniffles).
             ${TIME_COMMAND} bcftools norm --threads ${N_THREADS} --multiallelics - --check-ref s --fasta-ref ~{reference_fa} --do-not-normalize --output-type z tmp0.vcf.gz > tmp1.vcf.gz
             tabix -f tmp1.vcf.gz
@@ -155,55 +135,23 @@ task IntraSampleMerge {
             ${TIME_COMMAND} bgzip --threads ${N_THREADS} --compress-level ~{compression_level} tmp2.vcf
             tabix -f tmp2.vcf.gz
             
-            # - Removing INFO/STRAND, to avoid the following error when merging
-            #   e.g. sniffles and cutesv VCFs:
-            #   [W::bcf_hdr_merge] Trying to combine "STRAND" tag definitions of
-            #   different lengths
-            #   Error occurred while processing INFO tag "STRAND" at chr1:...
-            bcftools annotate --remove INFO/STRAND --output-type z tmp2.vcf.gz > tmp3.vcf.gz
-            tabix -f tmp3.vcf.gz
-            rm -f tmp2.vcf.gz*
-            
             # - Removing identical records
             # See <https://github.com/samtools/bcftools/issues/1089>.
-            ${TIME_COMMAND} bcftools norm --threads ${N_THREADS} --rm-dup exact --output-type v tmp3.vcf.gz > ${OUTPUT_VCF}
-            rm -f tmp3.vcf.gz*
+            ${TIME_COMMAND} bcftools norm --threads ${N_THREADS} --rm-dup exact --output-type v tmp2.vcf.gz > ${OUTPUT_VCF}
+            rm -f tmp2.vcf.gz*
             ${TIME_COMMAND} bgzip --threads ${N_THREADS} --compress-level ~{compression_level} ${OUTPUT_VCF}
             tabix -f ${OUTPUT_VCF}.gz
         }
         
-        # Merging all single-caller VCFs
-        INPUT_FILES=~{sep=',' sample_vcf_gz}
-        INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
-        rm -f list.txt
-        i="0"; SAMPLE_ID="SAMPLE";
-        for INPUT_FILE in ${INPUT_FILES}; do
-            if [ ${SAMPLE_ID} = "SAMPLE" -o ${SAMPLE_ID} = "NULL" ]; then
-                SAMPLE_ID=$(bcftools view --header-only ${INPUT_FILE} | tail -n 1 | cut -f 10)
-            fi
-            cleanVCF ${INPUT_FILE} ${i}.vcf
-            echo ${i}.vcf.gz >> list.txt
-            rm -f ${INPUT_FILE}
-            i=$(( ${i} + 1 ))
-        done
-        ${TIME_COMMAND} bcftools merge --threads ${N_THREADS} --merge none --force-samples --file-list list.txt --output-type z > tmp2.vcf.gz
-        tabix -f tmp2.vcf.gz
+        # Cleaning the single-caller VCF
+        cleanVCF ~{sample_vcf_gz} cleaned.vcf
         
-        # Removing multiallelic records, if any are generated during the merge.
-        ${TIME_COMMAND} bcftools norm --threads ${N_THREADS} --multiallelics - --output-type z tmp2.vcf.gz > tmp3.vcf.gz
-        tabix -f tmp3.vcf.gz
-        rm -f tmp2.vcf.gz*
-        
-        # Forcing all GTs to 0/1.
-        bcftools view --header-only tmp3.vcf.gz > header.txt
+        # Keeping the original GTs
+        bcftools view --header-only cleaned.vcf.gz > header.txt
         N_ROWS=$(wc -l < header.txt)
         head -n $(( ${N_ROWS} - 1 )) header.txt > out.vcf
-        echo -e "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t${SAMPLE_ID}" >> out.vcf
-        ${TIME_COMMAND} bcftools view --no-header tmp3.vcf.gz | awk '{ \
-            printf("%s",$1); \
-            for (i=2; i<=8; i++) printf("\t%s",$i); \
-            printf("\tGT\t0/1\n"); \
-        }' >> out.vcf
+        echo -e "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t~{sample_id}" >> out.vcf
+        ${TIME_COMMAND} bcftools view --no-header cleaned.vcf.gz >> out.vcf
         ${TIME_COMMAND} bgzip --threads ${N_THREADS} --compress-level ~{compression_level} out.vcf
         tabix -f out.vcf.gz
         ls -laht; tree
@@ -223,10 +171,6 @@ task IntraSampleMerge {
 }
 
 
-# Remark: since the input comes from $IntraSampleMerge$, which overwrites GTs,
-# every call in the output of this procedure has at least one sample with
-# GT=0/1, and every sample has GT \in {0/1, ./.}.
-#
 # Performance on 1074 AoU 8x samples:
 # COMMAND           RUNTIME     N_CPUS      MAX_RSS
 # bcftools merge    2.5h        2           140G

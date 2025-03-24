@@ -119,6 +119,16 @@ RUN wget https://github.com/arq5x/bedtools2/releases/download/v${bedtools_versio
     && bedtools --help
 
 
+# ----------------------------- NON-SV CALLERS ---------------------------------
+
+ARG trgt_version=1.5.1
+RUN wget https://github.com/PacificBiosciences/trgt/releases/download/v1.5.1/trgt-v${trgt_version}-x86_64-unknown-linux-gnu.tar.gz \
+    && tar -zxvf trgt-v${trgt_version}-x86_64-unknown-linux-gnu.tar.gz \
+    && mv trgt-v${trgt_version}-x86_64-unknown-linux-gnu/trgt . \
+    && chmod +x trgt \
+    && ./trgt --help
+
+
 # ------------------------------- ALIGNMENT ------------------------------------
 
 # MINIMAP2
@@ -135,7 +145,19 @@ RUN conda install -c bioconda pbmm2=${pbmm2_version} \
     && pbmm2 --help
 
 
-# ----------------------------- VARIANT CALLING --------------------------------
+# ------------------------------- ASSEMBLERS -----------------------------------
+
+ARG hifiasm_version=0.24.0
+RUN wget https://github.com/chhylp123/hifiasm/archive/refs/tags/${hifiasm_version}.tar.gz \
+    && tar -xzvf ${hifiasm_version}.tar.gz \
+    && rm -f ${hifiasm_version}.tar.gz \
+    && mv hifiasm-${hifiasm_version} hifiasm \
+    && cd hifiasm \
+    && make -j 16 \
+    && ./hifiasm -h
+
+
+# ------------------------------- SV CALLERS -----------------------------------
 
 # SNIFFLES
 ARG sniffles_version=2.5.3
@@ -186,14 +208,16 @@ RUN wget https://github.com/tjiangHIT/cuteSV/archive/refs/tags/cuteSV-v${cutesv_
 #     && cd NanoVar-${nanovar_version} \
 #     && pip install .
     
-# # SVIM
-# ARG svim_version=2.0.0
-# RUN wget https://github.com/eldariont/svim/archive/refs/tags/v${svim_version}.tar.gz \
-#     && tar xzf v${svim_version}.tar.gz \
-#     && rm -f v${svim_version}.tar.gz \
-#     && cd svim-${svim_version} \
-#     && pip install . \
-#     && svim --help
+# SVIM
+ARG svim_version=2.0.0
+RUN wget https://github.com/eldariont/svim/archive/refs/tags/v${svim_version}.tar.gz \
+    && tar xzf v${svim_version}.tar.gz \
+    && rm -f v${svim_version}.tar.gz \
+    && cd svim-${svim_version} \
+    && pip install . \
+    && svim --help
+# Bypassing the final plotting, since it throws an error.
+COPY ./svim /opt/conda/bin/svim
 
 # # WTDBG2 (for debreak)
 # ARG wtdbg2_version=2.5
@@ -211,11 +235,34 @@ RUN wget https://github.com/tjiangHIT/cuteSV/archive/refs/tags/cuteSV-v${cutesv_
 #     && mv ./DeBreak-${debreak_version}/ ./debreak/ \
 #     && ./debreak/debreak --help
 
+# # PAV (tried but failed to make the latest version work with the AoU WDLs)
+# ARG pav_version=2.4.6
+# ARG svpop_commit=968993798c770ce279c72a3004bbace1d2053b72
+# RUN wget https://github.com/EichlerLab/pav/archive/refs/tags/v${pav_version}.tar.gz \
+#     && tar xzf v${pav_version}.tar.gz \
+#     && rm -f v${pav_version}.tar.gz \
+#     && mv pav-${pav_version} pav \
+#     && cd pav/dep \
+#     && git clone --recursive https://github.com/EichlerLab/svpop.git \
+#     && cd svpop \
+#     && git checkout ${svpop_commit} \
+#     && cd ../../.. \
+#     && mkdir -p /opt/ \
+#     && mv pav /opt/pav
+# COPY ./pav_environment.yml .
+# RUN conda env create -f pav_environment.yml \
+#     && conda clean -a
+# ENV PATH=/opt/conda/envs/lr-pav/bin/:${PATH}
+# COPY ./pav_test_install.py /tmp/
+# #SHELL ["conda", "run", "-n", "lr-pav", "/bin/bash", "-c"]
+# #RUN python /tmp/pav_test_install.py
 
-# ------------------------------- SV MERGING -----------------------------------
+
+# ------------------------------- SV MERGERS -----------------------------------
 
 # TRUVARI
 ARG truvari_version=5.0.0
+# ARG truvari_version=4.3.1   # OLD TRUVARI, JUST TO MEASURE CHANGES.
 RUN pip3 install truvari==${truvari_version} \
     && truvari --help
 
@@ -225,7 +272,14 @@ RUN conda config --add channels bioconda \
     && conda config --add channels conda-forge \
     && conda install jasminesv=${jasmine_version}
 
-
+# PANPOP
+ARG panpop_version=NC2024
+RUN wget https://github.com/starskyzheng/panpop/archive/refs/tags/${panpop_version}.tar.gz \
+    && tar xzf ${panpop_version}.tar.gz \
+    && rm -f ${panpop_version}.tar.gz \
+    && cd panpop-${panpop_version} \
+    && conda env create -f conda.panpop.yaml
+#SHELL ["conda", "run", "-n", "panpop", "/bin/bash", "-c"]
 
 # # MAFFT
 # RUN conda install conda-forge::mafft \
@@ -239,6 +293,25 @@ RUN conda config --add channels bioconda \
 # COPY ./jasmine /opt/conda/envs/jasmine/bin/jasmine
 # SHELL ["chmod", "+x", "/opt/conda/envs/jasmine/bin/jasmine"]
 # SHELL ["/bin/bash", "-c"]
+
+# ------------------------------ SV GENOTYPERS ---------------------------------
+
+ARG kanpig_version=1.0.2
+RUN wget https://github.com/ACEnglish/kanpig/releases/download/v${kanpig_version}/kanpig-v${kanpig_version}-x86_64-unknown-linux-musl.tar.gz \
+    && tar xzf kanpig-v${kanpig_version}-x86_64-unknown-linux-musl.tar.gz \
+    && ls -laht kanpig-v${kanpig_version}-x86_64-unknown-linux-musl \
+    && mv ./kanpig-v${kanpig_version}-x86_64-unknown-linux-musl/kanpig . \
+    && chmod +x ./kanpig \
+    && ./kanpig --help
+
+# ---------------------------------- PHASERS -----------------------------------
+
+ARG hiphase_version=1.4.5
+RUN wget https://github.com/PacificBiosciences/HiPhase/releases/download/v${hiphase_version}/hiphase-v${hiphase_version}-x86_64-unknown-linux-gnu.tar.gz \
+    && tar -xzf hiphase-v${hiphase_version}-x86_64-unknown-linux-gnu.tar.gz \
+    && mv hiphase-v${hiphase_version}-x86_64-unknown-linux-gnu/hiphase ./hiphase \
+    && chmod +x ./hiphase \
+    && ./hiphase -h
 
 
 # ----------------------------- CUSTOM SCRIPTS ---------------------------------

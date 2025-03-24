@@ -1,57 +1,51 @@
 version 1.0
 
 
-# Performance on HG002:
+# 
 #
-# COVERAGE  TIME    N_CPUS_IN_MACHINE   RAM_IN_MACHINE  CPU_USAGE_%     MAX_RSS
-# 4x        40m     32                  128             2000%           31G
-# 8x        1h20m   32                  128             2100%           31G
-# 16x       1h40m   64                  128             3700%           43G
-# 32x       2h15m   64                  128             3700%           42G
-#
-workflow MapCCS {
+workflow AlignONT {
     input {
         String sample_id
         File reference_fa
         File reference_fai
         File reads_fastq_gz
+        Boolean is_r10
         Int n_cpus
         Int ram_size_gb
         Int disk_gb
-        String docker = "fcunial/hapestry_experiments"
     }
     parameter_meta {
     }
     
-    call MapCCSImpl {
+    call AlignONTImpl {
         input:
             sample_id = sample_id,
             reference_fa = reference_fa,
             reference_fai = reference_fai,
             reads_fastq_gz = reads_fastq_gz,
+            is_r10 = is_r10,
             n_cpus = n_cpus,
             ram_size_gb = ram_size_gb,
-            disk_gb = disk_gb,
-            docker = docker
+            disk_gb = disk_gb
     }
     
     output {
-        File output_bam = MapCCSImpl.output_bam
-        File output_bai = MapCCSImpl.output_bai
+        File output_bam = AlignONTImpl.output_bam
+        File output_bai = AlignONTImpl.output_bai
     }
 }
 
 
-task MapCCSImpl {
+task AlignONTImpl {
     input {
         String sample_id
         File reference_fa
         File reference_fai
         File reads_fastq_gz
+        Boolean is_r10
         Int n_cpus
         Int ram_size_gb
         Int disk_gb
-        String docker
     }
     parameter_meta {
     }
@@ -68,11 +62,16 @@ task MapCCSImpl {
         TIME_COMMAND="/usr/bin/time --verbose"
         N_SOCKETS="$(lscpu | grep '^Socket(s):' | awk '{print $NF}')"
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
-        N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
+        N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         
-        # Remark: pbmm2 automatically uses all cores.
-        ${TIME_COMMAND} pbmm2 align --preset CCS --sort --sample ~{sample_id} ~{reference_fa} ~{reads_fastq_gz} out.bam
-        ${TIME_COMMAND} samtools calmd -@ ${N_THREADS} --no-PG -b out.bam ~{reference_fa} > ~{sample_id}.bam
+        FLAGS=""
+        if [[ ~{is_r10} == true ]]; then
+            FLAGS="-x lr:hq"
+        else
+            FLAGS="-x map-ont"
+        fi
+        ${TIME_COMMAND} ~{docker_dir}/minimap2/minimap2 -t ${N_THREADS} ${FLAGS} -ayYL --MD --eqx --cs ~{reference_fa} ~{reads_fastq_gz} > out.sam
+        ${TIME_COMMAND} samtools sort -@ ${N_THREADS} --no-PG -O BAM out.sam > ~{sample_id}.bam
         ${TIME_COMMAND} samtools index -@ ${N_THREADS} ~{sample_id}.bam
     >>>
     
@@ -81,7 +80,7 @@ task MapCCSImpl {
         File output_bai = work_dir + "/" + sample_id + ".bam.bai"
     }
     runtime {
-        docker: docker
+        docker: "fcunial/hapestry_experiments"
         cpu: n_cpus
         memory: ram_size_gb + "GB"
         disks: "local-disk " + disk_size_gb + " HDD"
