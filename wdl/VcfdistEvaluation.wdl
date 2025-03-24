@@ -99,17 +99,22 @@ workflow VcfdistEvaluation {
         }
     }
 
-    call ComputeAverage as avg_p { input:
-        x = vcfdist.SV_PREC
-    }
+    # Compute averages for all categories
+    call ComputeAverage as avg_sv_p { input: x = vcfdist.SV_PREC }
+    call ComputeAverage as avg_sv_r { input: x = vcfdist.SV_RECALL }
+    call ComputeAverage as avg_sv_f { input: x = vcfdist.SV_F1_SCORE }
 
-    call ComputeAverage as avg_r { input:
-        x = vcfdist.SV_RECALL
-    }
+    call ComputeAverage as avg_snp_p { input: x = vcfdist.SNP_PREC }
+    call ComputeAverage as avg_snp_r { input: x = vcfdist.SNP_RECALL }
+    call ComputeAverage as avg_snp_f { input: x = vcfdist.SNP_F1_SCORE }
 
-    call ComputeAverage as avg_f { input:
-        x = vcfdist.SV_F1_SCORE
-    }
+    call ComputeAverage as avg_indel_p { input: x = vcfdist.INDEL_PREC }
+    call ComputeAverage as avg_indel_r { input: x = vcfdist.INDEL_RECALL }
+    call ComputeAverage as avg_indel_f { input: x = vcfdist.INDEL_F1_SCORE }
+
+    call ComputeAverage as avg_all_p { input: x = vcfdist.ALL_PREC }
+    call ComputeAverage as avg_all_r { input: x = vcfdist.ALL_RECALL }
+    call ComputeAverage as avg_all_f { input: x = vcfdist.ALL_F1_SCORE }
 
     output {
         # per-sample
@@ -117,11 +122,28 @@ workflow VcfdistEvaluation {
         Array[File] vcfdist_precision_recall_summary_tsv = vcfdist.precision_recall_summary_tsv
         Array[File] vcfdist_superclusters_tsv = vcfdist.superclusters_tsv
 
-        Float SV_PREC_avg = avg_p.y
-        Float SV_RECALL_avg = avg_r.y
-        Float SV_F1_SCORE_avg = avg_f.y
+        # SV metrics
+        Float SV_PREC_avg = avg_sv_p.y
+        Float SV_RECALL_avg = avg_sv_r.y
+        Float SV_F1_SCORE_avg = avg_sv_f.y
+
+        # SNP metrics
+        Float SNP_PREC_avg = avg_snp_p.y
+        Float SNP_RECALL_avg = avg_snp_r.y
+        Float SNP_F1_SCORE_avg = avg_snp_f.y
+
+        # INDEL metrics
+        Float INDEL_PREC_avg = avg_indel_p.y
+        Float INDEL_RECALL_avg = avg_indel_r.y
+        Float INDEL_F1_SCORE_avg = avg_indel_f.y
+
+        # ALL metrics
+        Float ALL_PREC_avg = avg_all_p.y
+        Float ALL_RECALL_avg = avg_all_r.y
+        Float ALL_F1_SCORE_avg = avg_all_f.y
     }
 }
+
 
 task SubsetSampleFromVcf {
     input {
@@ -177,6 +199,7 @@ task SubsetSampleFromVcf {
     }
 }
 
+
 task Vcfdist {
     input {
         String sample
@@ -204,23 +227,35 @@ task Vcfdist {
             -v ~{verbosity} \
             ~{extra_args}
 
-        # Extract the row where VAR_TYPE = 'SV' and THRESHOLD = 'BEST'
-        row=$(awk -F'\t' 'NR==1 {for (i=1; i<=NF; i++) header[i]=$i} $1=="SV" && $2=="BEST" {for (i=1; i<=NF; i++) print header[i], $i}' precision-recall-summary.tsv)
+        extract_metrics() {
+            local VAR_TYPE="$1"
+            # Extract the row where VAR_TYPE matches the provided variant and THRESHOLD = 'BEST'
+            row=$(awk -F'\t' -v var="$VAR_TYPE" '
+                NR==1 {for (i=1; i<=NF; i++) header[i]=$i}
+                $1==var && $2=="BEST" {
+                    for (i=1; i<=NF; i++) print header[i], $i
+                }' precision-recall-summary.tsv)
 
-        # Extract PREC, RECALL, and F1_SCORE values
-        SV_PREC=$(echo "$row" | awk '/PREC/ {print $2}')
-        SV_RECALL=$(echo "$row" | awk '/RECALL/ {print $2}')
-        SV_F1_SCORE=$(echo "$row" | awk '/F1_SCORE/ {print $2}')
+            # Extract PREC, RECALL, and F1_SCORE values
+            PREC=$(echo "$row" | awk '/PREC/ {print $2}')
+            RECALL=$(echo "$row" | awk '/RECALL/ {print $2}')
+            F1_SCORE=$(echo "$row" | awk '/F1_SCORE/ {print $2}')
 
-        # Print the extracted values
-        echo "SV_PREC: $SV_PREC"
-        echo "SV_RECALL: $SV_RECALL"
-        echo "SV_F1_SCORE: $SV_F1_SCORE"
+            # Print the extracted values
+            echo "${VAR_TYPE}_PREC: $PREC"
+            echo "${VAR_TYPE}_RECALL: $RECALL"
+            echo "${VAR_TYPE}_F1_SCORE: $F1_SCORE"
 
-        # write the values to 3 files
-        echo "$SV_PREC" > SV_PREC
-        echo "$SV_RECALL" > SV_RECALL
-        echo "$SV_F1_SCORE" > SV_F1_SCORE
+            # Write the values to files
+            echo "$PREC" > "${VAR_TYPE}_PREC"
+            echo "$RECALL" > "${VAR_TYPE}_RECALL"
+            echo "$F1_SCORE" > "${VAR_TYPE}_F1_SCORE"
+        }
+
+        extract_metrics "SV"
+        extract_metrics "INDEL"
+        extract_metrics "SNP"
+        extract_metrics "ALL"
 
         for tsv in $(ls *.tsv); do mv $tsv ~{sample}.$tsv; done
         mv summary.vcf ~{sample}.summary.vcf
@@ -236,9 +271,26 @@ task Vcfdist {
         File switchflips_tsv = "~{sample}.switchflips.tsv"
         File superclusters_tsv = "~{sample}.superclusters.tsv"
         File phase_blocks_tsv = "~{sample}.phase-blocks.tsv"
-        Float SV_PREC =read_float("SV_PREC")
-        Float SV_RECALL =read_float("SV_RECALL")
-        Float SV_F1_SCORE =read_float("SV_F1_SCORE")
+
+        # SV metrics
+        Float SV_PREC = read_float("SV_PREC")
+        Float SV_RECALL = read_float("SV_RECALL")
+        Float SV_F1_SCORE = read_float("SV_F1_SCORE")
+
+        # SNP metrics
+        Float SNP_PREC = read_float("SNP_PREC")
+        Float SNP_RECALL = read_float("SNP_RECALL")
+        Float SNP_F1_SCORE = read_float("SNP_F1_SCORE")
+
+        # INDEL metrics
+        Float INDEL_PREC = read_float("INDEL_PREC")
+        Float INDEL_RECALL = read_float("INDEL_RECALL")
+        Float INDEL_F1_SCORE = read_float("INDEL_F1_SCORE")
+
+        # ALL metrics
+        Float ALL_PREC = read_float("ALL_PREC")
+        Float ALL_RECALL = read_float("ALL_RECALL")
+        Float ALL_F1_SCORE = read_float("ALL_F1_SCORE")
     }
 
     runtime {
