@@ -197,21 +197,22 @@ task Concat {
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
         N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         
-        # Removing SVs inside TRGT intervals
-        ${TIME_COMMAND} bedtools complement -i ~{trgt_merge_vcf_gz} -g ~{reference_fai} > not_trgt.bed
-        ${TIME_COMMAND} bcftools filter --threads ${N_THREADS} --regions-file not_trgt.bed --regions-overlap variant --output-type z ~{sv_merge_vcf_gz} > tmp1.vcf.gz
-        tabix -f tmp1.vcf.gz
-        rm -f ~{sv_merge_vcf_gz}
-        
         # Ensuring that samples have the same order in both files
-        ${TIME_COMMAND} bcftools view --samples-file ~{samples_file} --output-type z tmp1.vcf.gz > tmp2.vcf.gz
-        tabix -f tmp1.vcf.gz
-        ${TIME_COMMAND} bcftools view --samples-file ~{samples_file} --output-type z ~{trgt_merge_vcf_gz} > tmp3.vcf.gz
-        tabix -f tmp3.vcf.gz
+        ${TIME_COMMAND} bcftools view --samples-file ~{samples_file} --output-type z ~{sv_merge_vcf_gz} > sv.vcf.gz
+        tabix -f sv.vcf.gz
+        rm -f ~{sv_merge_vcf_gz}
+        ${TIME_COMMAND} bcftools view --samples-file ~{samples_file} --output-type z ~{trgt_merge_vcf_gz} > trgt.vcf.gz
+        tabix -f trgt.vcf.gz
         rm -f ~{trgt_merge_vcf_gz}
         
+        # Removing SVs inside TRGT intervals
+        ${TIME_COMMAND} bedtools complement -i trgt.vcf.gz -g ~{reference_fai} > not_trgt.bed
+        ${TIME_COMMAND} bcftools filter --threads ${N_THREADS} --regions-file not_trgt.bed --output-type z sv.vcf.gz > sv_cleaned.vcf.gz
+        tabix -f sv_cleaned.vcf.gz
+        rm -f sv.vcf.gz*
+        
         # Combining SV and TRGT calls
-        ${TIME_COMMAND} bcftools concat --threads ${N_THREADS} --allow-overlaps --output-type z tmp2.vcf.gz tmp3.vcf.gz > out.vcf.gz
+        ${TIME_COMMAND} bcftools concat --threads ${N_THREADS} --allow-overlaps --output-type z sv_cleaned.vcf.gz trgt.vcf.gz > out.vcf.gz
         tabix -f out.vcf.gz
     >>>
     
