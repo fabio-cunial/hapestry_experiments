@@ -74,7 +74,7 @@ task Resolve {
         EFFECTIVE_RAM_GB=$(( ~{ram_gb} - 2 ))
         
         # Sorting
-        ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z ~{input_vcf_gz} > tmp1.vcf.gz
+        ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_RAM_GB}G --output-type z ~{input_vcf_gz} > tmp1.vcf.gz
         tabix -f tmp1.vcf.gz
         
         # Removing multiallelic records, which might be created by TRGT.
@@ -129,7 +129,6 @@ task Merge {
         N_SOCKETS="$(lscpu | grep '^Socket(s):' | awk '{print $NF}')"
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
         N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
-        EFFECTIVE_RAM_GB=$(( ~{ram_gb} - 2 ))
         
         INPUT_FILES=~{sep=',' input_vcf_gz}
         INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
@@ -197,7 +196,6 @@ task Concat {
         N_SOCKETS="$(lscpu | grep '^Socket(s):' | awk '{print $NF}')"
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
         N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
-        EFFECTIVE_RAM_GB=$(( ~{ram_size_gb} - 2 ))
         
         # Removing SVs inside TRGT intervals
         ${TIME_COMMAND} bedtools complement -i ~{trgt_merge_vcf_gz} -g ~{reference_fai} > not_trgt.bed
