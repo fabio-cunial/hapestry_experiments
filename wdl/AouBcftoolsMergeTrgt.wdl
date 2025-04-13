@@ -52,6 +52,8 @@ task Resolve {
     input {
         File input_vcf_gz
         File input_tbi
+        
+        Int ram_gb = 8
     }
     parameter_meta {
     }
@@ -69,6 +71,7 @@ task Resolve {
         N_SOCKETS="$(lscpu | grep '^Socket(s):' | awk '{print $NF}')"
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
         N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
+        EFFECTIVE_RAM_GB=$(( ~{ram_gb} - 2 ))
         
         # Sorting
         ${TIME_COMMAND} bcftools sort --max-mem ${EFFECTIVE_MEM_GB}G --output-type z ~{input_vcf_gz} > tmp1.vcf.gz
@@ -91,7 +94,7 @@ task Resolve {
     runtime {
         docker: "fcunial/hapestry_experiments"
         cpu: 2
-        memory: "8GB"
+        memory: ram_gb + "GB"
         disks: "local-disk " + disk_size_gb + " HDD"
         preemptible: 0
     }
