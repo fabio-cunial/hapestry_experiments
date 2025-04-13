@@ -53,7 +53,7 @@ task Resolve {
         File input_vcf_gz
         File input_tbi
         
-        Int ram_gb = 8
+        Int ram_gb = 4
     }
     parameter_meta {
     }
@@ -134,7 +134,7 @@ task Merge {
         INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
         rm -f list.txt
         for INPUT_FILE in ${INPUT_FILES}; do
-            echo ${INPUT_FILE}.vcf.gz >> list.txt
+            echo ${INPUT_FILE} >> list.txt
         done
         
         # $--info-rules -$ disables default rules, and it is used just to avoid
