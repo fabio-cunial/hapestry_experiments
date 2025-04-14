@@ -14,14 +14,16 @@ task SubsetNSamples {
     command <<<
         set -euxo pipefail
 
-        # Select `head` or `tail` based on `use_last`
         COMMAND="head"
         if ~{use_last}; then
             COMMAND="tail"
         fi
 
-        # subset to first n samples and then only keep rows that have at least one non-zero GT (aka AF>0)
-        bcftools view -Oz -s $("bcftools query -l ~{vcf_gz} | $COMMAND -n ~{n} | paste -sd, -") ~{vcf_gz} | bcftools +fill-tags -- -t AF | bcftools view -i 'AF>0' -Oz -o n_samples.vcf.gz
+        # Extract the list of sample names
+        SAMPLES=$(bcftools query -l ~{vcf_gz} | $COMMAND -n ~{n} | paste -sd, -)
+
+        # subset to first/last n samples and filter on AF > 0
+        bcftools view -Oz -s "$SAMPLES" ~{vcf_gz} | bcftools +fill-tags -- -t AF | bcftools view -i 'AF>0' -Oz -o n_samples.vcf.gz
 
         bcftools index -t --threads 4 n_samples.vcf.gz
     >>>
