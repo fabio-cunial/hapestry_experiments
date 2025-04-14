@@ -177,3 +177,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/Hiphase.wdl
+- name: AouBcftoolsMergeTrgt
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/AouBcftoolsMergeTrgt.wdl

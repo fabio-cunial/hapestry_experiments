@@ -51,6 +51,11 @@ workflow Hiphase {
 }
 
 
+# Resource usage with ????:
+#
+# COVERAGE  CPU     RAM      TIME
+# 8x        1300%   5.6G     8m10s
+# 32x       1500%   7G       13m
 #
 task HiphaseImpl {
     input {
