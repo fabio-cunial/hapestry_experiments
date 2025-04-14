@@ -186,6 +186,14 @@ task CleanPbsv {
 
 # Removes records with 0/0 or ./. GT.
 #
+# Performance on each AoU 8x sample:
+#
+# COMMAND           RUNTIME     N_CPUS      MAX_RSS
+# bcftools sort     35s         1           800M        
+# bcftools norm     30s         2           25M
+# bcftools filter   10s         2           25M
+# bcftools reheader 1s          1           700K
+#
 task CleanTrgt {
     input {
         String sample_id
@@ -246,6 +254,12 @@ task CleanTrgt {
 }
 
 
+# Performance on each AoU 8x sample:
+#
+# COMMAND               RUNTIME     N_CPUS      MAX_RSS
+# bcftools complement   2s          1           5M
+# bcftools filter       30s         1           30M
+# bcftools concat       4s          3           50M
 #
 task CombinePbsvTrgt {
     input {
@@ -256,8 +270,7 @@ task CombinePbsvTrgt {
         
         File reference_fai
         
-        Int n_cpu = 4
-        Int ram_size_gb = 8
+        Int ram_size_gb = 4
     }
     parameter_meta {
     }
@@ -292,7 +305,7 @@ task CombinePbsvTrgt {
     }
     runtime {
         docker: "fcunial/hapestry_experiments"
-        cpu: n_cpu
+        cpu: 4
         memory: ram_size_gb + "GB"
         disks: "local-disk " + disk_size_gb + " HDD"
         preemptible: 0
@@ -304,6 +317,9 @@ task CombinePbsvTrgt {
 #
 # COMMAND           RUNTIME     N_CPUS      MAX_RSS
 # bcftools merge    
+# bcftools norm
+# awk
+# bgzip
 #
 task Merge {
     input {
@@ -376,77 +392,6 @@ task Merge {
         docker: "fcunial/hapestry_experiments"
         cpu: 4
         memory: ram_gb + "GB"
-        disks: "local-disk " + disk_size_gb + " HDD"
-        preemptible: 0
-    }
-}
-
-
-
-
-
-
-
-
-
-#
-task Concat {
-    input {
-        File sv_merge_vcf_gz
-        File sv_merge_tbi
-        File trgt_merge_vcf_gz
-        File trgt_merge_tbi
-        
-        File samples_file
-        File reference_fai
-        
-        Int n_cpu = 4
-        Int ram_size_gb = 8
-    }
-    parameter_meta {
-    }
-    
-    Int disk_size_gb = 5*ceil( size(sv_merge_vcf_gz, "GB") + size(trgt_merge_vcf_gz, "GB") ) + 100
-    String docker_dir = "/hapestry"
-    String work_dir = "/cromwell_root/hapestry"
-    
-    command <<<
-        set -euxo pipefail
-        mkdir -p ~{work_dir}
-        cd ~{work_dir}
-        
-        TIME_COMMAND="/usr/bin/time --verbose"
-        N_SOCKETS="$(lscpu | grep '^Socket(s):' | awk '{print $NF}')"
-        N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
-        N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
-        
-        # Ensuring that samples have the same order in both files
-        ${TIME_COMMAND} bcftools view --samples-file ~{samples_file} --output-type z ~{sv_merge_vcf_gz} > sv.vcf.gz
-        tabix -f sv.vcf.gz
-        rm -f ~{sv_merge_vcf_gz}
-        ${TIME_COMMAND} bcftools view --samples-file ~{samples_file} --output-type z ~{trgt_merge_vcf_gz} > trgt.vcf.gz
-        tabix -f trgt.vcf.gz
-        rm -f ~{trgt_merge_vcf_gz}
-        
-        # Removing SVs inside TRGT intervals
-        ${TIME_COMMAND} bedtools complement -i trgt.vcf.gz -g ~{reference_fai} > not_trgt.bed
-        ${TIME_COMMAND} bcftools filter --threads ${N_THREADS} --regions-file not_trgt.bed --output-type z sv.vcf.gz > sv_cleaned.vcf.gz
-        tabix -f sv_cleaned.vcf.gz
-        rm -f sv.vcf.gz*
-        
-        # Combining SV and TRGT calls
-        ${TIME_COMMAND} bcftools concat --threads ${N_THREADS} --allow-overlaps --output-type z sv_cleaned.vcf.gz trgt.vcf.gz > out.vcf.gz
-        tabix -f out.vcf.gz
-    >>>
-    
-    output {
-        File output_vcf_gz = work_dir + "/out.vcf.gz"
-        File output_tbi = work_dir + "/out.vcf.gz.tbi"
-    }
-    runtime {
-        docker: "fcunial/hapestry_experiments"
-        cpu: n_cpu
-        memory: ram_size_gb + "GB"
         disks: "local-disk " + disk_size_gb + " HDD"
         preemptible: 0
     }
