@@ -67,6 +67,10 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/subset_csv_samples_using_vcf.wdl
+- name: subset_csv_samples_using_vcf_substring
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/subset_csv_samples_using_vcf_substring.wdl
 - name: clean_vcf
   subclass: wdl
   publish: True
