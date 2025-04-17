@@ -2,22 +2,6 @@ version 1.0
 import "clean_vcf.wdl" as clean_vcf
 
 
-struct VcfdistOutputs {
-    File summary_vcf
-    File precision_recall_summary_tsv
-    File precision_recall_tsv
-    File query_tsv
-    File truth_tsv
-    File phasing_summary_tsv
-    File switchflips_tsv
-    File superclusters_tsv
-    File phase_blocks_tsv
-    Float SV_PREC
-    Float SV_RECALL
-    Float SV_F1_SCORE
-}
-
-
 # task to average any Array[Float]
 task ComputeAverage {
     input {
