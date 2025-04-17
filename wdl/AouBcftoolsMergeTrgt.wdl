@@ -19,6 +19,8 @@ workflow AouBcftoolsMergeTrgt {
         
         File reference_fa
         File reference_fai
+        
+        Array[String] chromosomes = [     ]
     }
     parameter_meta {
     }
@@ -47,15 +49,24 @@ workflow AouBcftoolsMergeTrgt {
                 reference_fai = reference_fai
         }
     }
-    call Merge {
+    scatter (i in range(length(chromosomes))) {
+        call Merge {
+            input:
+                chr = chromosomes[i],
+                input_vcf_gz = CombinePbsvTrgt.output_vcf_gz,
+                input_tbi = CombinePbsvTrgt.output_tbi
+        }
+    }
+    call ConcatenateChromosomes {
         input:
-            input_vcf_gz = CombinePbsvTrgt.output_vcf_gz,
-            input_tbi = CombinePbsvTrgt.output_tbi
+            chromosomes_vcf_gz = Merge.output_vcf_gz,
+            chromosomes_tbi = Merge.output_tbi,
+            sample_ids = sample_ids
     }
     
     output {
-        File output_vcf_gz = Merge.output_vcf_gz
-        File output_tbi = Merge.output_tbi
+        File output_vcf_gz = ConcatenateChromosomes.output_vcf_gz
+        File output_tbi = ConcatenateChromosomes.output_tbi
     }
 }
 
@@ -313,7 +324,10 @@ task CombinePbsvTrgt {
 }
 
 
-# Performance on 1074 AoU 8x samples:
+# Remark: splitting by chromosome is necessary, sicne e.g. bcftools merge on
+# all chromosomes takes 27h and 24.5G of RAM.
+#
+# Performance on 1074 AoU 8x samples, chr1:
 #
 # COMMAND           RUNTIME     N_CPUS      MAX_RSS
 # bcftools merge    
@@ -323,10 +337,12 @@ task CombinePbsvTrgt {
 #
 task Merge {
     input {
+        String chr
         Array[File] input_vcf_gz
         Array[File] input_tbi
         
-        Int ram_gb = 256
+        Int n_cpu = 4
+        Int ram_gb = 32
     }
     parameter_meta {
     }
@@ -346,11 +362,17 @@ task Merge {
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
         N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         
+        # - Subsetting to the given chromosome
         INPUT_FILES=~{sep=',' input_vcf_gz}
         INPUT_FILES=$(echo ${INPUT_FILES} | tr ',' ' ')
         rm -f list.txt
+        i="0"
         for INPUT_FILE in ${INPUT_FILES}; do
-            echo ${INPUT_FILE} >> list.txt
+            i=$(( ${i} + 1 ))
+            bcftools view --output-type z ${INPUT_FILE} ~{chr} > ~{chr}_${i}.vcf.gz
+            tabix -f ~{chr}_${i}.vcf.gz
+            rm -f ${INPUT_FILE}
+            echo ~{chr}_${i}.vcf.gz >> list.txt
         done
         
         # - Merging all samples
@@ -392,6 +414,67 @@ task Merge {
         docker: "fcunial/hapestry_experiments"
         cpu: 4
         memory: ram_gb + "GB"
+        disks: "local-disk " + disk_size_gb + " HDD"
+        preemptible: 0
+    }
+}
+
+
+#
+task ConcatenateChromosomes {
+    input {
+        Array[File] chromosomes_vcf_gz
+        Array[File] chromosomes_tbi
+        Array[String] sample_ids
+        
+        Int n_cpu = 4
+        Int ram_size_gb = 8
+    }
+    parameter_meta {
+    }
+    
+    String docker_dir = "/hapestry"
+    String work_dir = "/cromwell_root/hapestry"
+    Int disk_size_gb = 256  # Arbitrary
+
+    command <<<
+        set -euxo pipefail
+        mkdir -p ~{work_dir}
+        cd ~{work_dir}
+        
+        TIME_COMMAND="/usr/bin/time --verbose"
+        N_SOCKETS="$(lscpu | grep '^Socket(s):' | awk '{print $NF}')"
+        N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
+        N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
+        
+        SAMPLE_IDS=~{sep=',' sample_ids}
+        echo ${SAMPLE_IDS} | tr ',' '\n' > samples_file.txt
+        INPUT_FILES=~{sep=',' chromosomes_vcf_gz}
+        echo ${INPUT_FILES} | tr ',' '\n' | sort > list.txt
+        
+        # Ensuring that samples have the same order in all chromosome files
+        rm -f list_filtered.txt
+        while read FILE; do
+            ID=$(basename ${FILE} .vcf.gz)
+            bcftools view --samples-file samples_file.txt --output-type z ${FILE} > ${ID}_filtered.vcf.gz
+            tabix -f ${ID}_filtered.vcf.gz
+            echo ${ID}_filtered.vcf.gz >> list_filtered.txt
+            rm -f ${FILE}
+        done < list.txt
+        
+        # Concatenating
+        ${TIME_COMMAND} bcftools concat --threads ${N_THREADS} --allow-overlaps --file-list list_filtered.txt --output-type z > concat.vcf.gz
+        tabix -f concat.vcf.gz
+    >>>
+
+    output {
+        File output_vcf_gz = work_dir + "/concat.vcf.gz"
+        File output_tbi = work_dir + "/concat.vcf.gz.tbi"
+    }
+    runtime {
+        docker: "fcunial/hapestry_experiments"
+        cpu: n_cpu
+        memory: ram_size_gb + "GB"
         disks: "local-disk " + disk_size_gb + " HDD"
         preemptible: 0
     }
