@@ -24,10 +24,10 @@ with open("vcf_samples.txt") as f:
 # Open input and output CSVs
 with open("~{csv}", newline='') as infile, open("output.csv", "w", newline='') as outfile:
     reader = csv.reader(infile)
-    writer = csv.writer(outfile)
     for row in reader:
         if any(sample in row[0] for sample in vcf_samples):
-            writer.writerow(row)
+            outfile.write(','.join(row))
+            outfile.write('\n')
 EOF
   >>>
     output {
