@@ -448,7 +448,7 @@ task ConcatenateChromosomes {
         N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         
         SAMPLE_IDS=~{sep=',' sample_ids}
-        echo ${SAMPLE_IDS} | tr ',' '\n' > samples_file.txt
+        echo ${SAMPLE_IDS} | tr ',' '\n' | sort > samples_file.txt
         INPUT_FILES=~{sep=',' chromosomes_vcf_gz}
         echo ${INPUT_FILES} | tr ',' '\n' | sort > list.txt
         
