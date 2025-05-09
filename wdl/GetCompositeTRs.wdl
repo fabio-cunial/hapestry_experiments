@@ -14,6 +14,9 @@ workflow GetCompositeTRs {
         File trgt_repeat_catalog
         File bcftools_merge_vcf_gz
         File bcftools_merge_tbi
+        
+        Int ram_gb = 16
+        Int disk_size_gb = 50
     }
     parameter_meta {
     }
@@ -38,13 +41,15 @@ task GetCompositeTRsImpl {
         File trgt_repeat_catalog
         File bcftools_merge_vcf_gz
         File bcftools_merge_tbi
+        
+        Int ram_gb
+        Int disk_size_gb
     }
     parameter_meta {
     }
 
     String docker_dir = "/hapestry"
     String work_dir = "/cromwell_root/hapestry"
-    Int disk_size_gb = 10*( ceil(size(tandem_repeat_track_bed,"GB")) + ceil(size(trgt_repeat_catalog,"GB")) + ceil(size(bcftools_merge_vcf_gz,"GB")) )
 
     command <<<
         set -euxo pipefail
@@ -65,7 +70,7 @@ task GetCompositeTRsImpl {
     runtime {
         docker: "fcunial/hapestry_experiments"
         cpu: 1
-        memory: "4GB"
+        memory: ram_gb + "GB"
         disks: "local-disk " + disk_size_gb + " HDD"
         preemptible: 0
     }
