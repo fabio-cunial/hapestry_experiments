@@ -324,8 +324,8 @@ task CombinePbsvTrgt {
 }
 
 
-# Remark: splitting by chromosome is necessary, sicne e.g. bcftools merge on
-# all chromosomes takes 27h and 24.5G of RAM.
+# Remark: splitting by chromosome is necessary, since e.g. running bcftools
+# merge on the all-chromosomes VCF takes 27h and 24.5G of RAM.
 #
 # Performance on 1074 AoU 8x samples, chr1:
 #
@@ -475,7 +475,7 @@ task ConcatenateChromosomes {
         docker: "fcunial/hapestry_experiments"
         cpu: n_cpu
         memory: ram_size_gb + "GB"
-        disks: "local-disk " + disk_size_gb + " HDD"
+        disks: "local-disk " + disk_size_gb + " SSD"
         preemptible: 0
     }
 }
