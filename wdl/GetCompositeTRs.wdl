@@ -26,7 +26,9 @@ workflow GetCompositeTRs {
             tandem_repeat_track_bed = tandem_repeat_track_bed,
             trgt_repeat_catalog = trgt_repeat_catalog,
             bcftools_merge_vcf_gz = bcftools_merge_vcf_gz,
-            bcftools_merge_tbi = bcftools_merge_tbi
+            bcftools_merge_tbi = bcftools_merge_tbi,
+            ram_gb = ram_gb,
+            disk_size_gb = disk_size_gb
     }
     output {
         File composite_trs_bed = GetCompositeTRsImpl.composite_trs_bed
