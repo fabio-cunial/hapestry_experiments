@@ -60,8 +60,8 @@ task FindWindows {
         Int min_sv_length = 50
         Int flank_length = 200
         
-        Int n_cpu = 2
-        Int ram_gb = 8
+        Int n_cpu = 8
+        Int ram_gb = 16
         Int disk_size_gb = 50
     }
     parameter_meta {
@@ -77,13 +77,14 @@ task FindWindows {
         
         N_SOCKETS="$(lscpu | grep '^Socket(s):' | awk '{print $NF}')"
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
-        N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
+        N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         TIME_COMMAND="/usr/bin/time --verbose"
         
         mv ~{bcftools_merge_vcf_gz} ./bcftools_merge.vcf.gz
         ${TIME_COMMAND} bgzip -@ ${N_THREADS} --decompress bcftools_merge.vcf.gz
-        mkdir ./out
         ${TIME_COMMAND} ~{docker_dir}/sv_merge/build/find_windows --n_chunks 1 --vcf bcftools_merge.vcf --tandems ~{tandems_bed} --interval_max_length ~{interval_max_length} --min_sv_length ~{min_sv_length} --flank_length ~{flank_length} --ref_fasta ~{ref_fasta} --output_dir ./out
+        ls -lah ./out
+        tree
     >>>
     output {
         File windows_bed = work_dir + "/out/run/windows_0_unflanked.bed"
@@ -107,8 +108,8 @@ task GetMeis {
         File bcftools_merge_vcf_gz
         File bcftools_merge_tbi
         
-        Int n_cpu = 2
-        Int ram_gb = 8
+        Int n_cpu = 8
+        Int ram_gb = 16
         Int disk_size_gb = 50
     }
     parameter_meta {
@@ -124,7 +125,7 @@ task GetMeis {
         
         N_SOCKETS="$(lscpu | grep '^Socket(s):' | awk '{print $NF}')"
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
-        N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
+        N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         TIME_COMMAND="/usr/bin/time --verbose"
         
         
