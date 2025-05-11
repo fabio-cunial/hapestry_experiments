@@ -87,7 +87,7 @@ task FindWindows {
         tree
     >>>
     output {
-        File windows_bed = work_dir + "/out/run/windows_0_unflanked.bed"
+        File windows_bed = work_dir + "/out/windows_0_unflanked.bed"
     }
     runtime {
         docker: "fcunial/hapestry:merge"
