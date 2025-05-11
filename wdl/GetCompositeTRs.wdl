@@ -15,7 +15,7 @@ workflow GetCompositeTRs {
         File bcftools_merge_vcf_gz
         File bcftools_merge_tbi
         
-        Int ram_gb = 16
+        Int ram_gb = 32
         Int disk_size_gb = 50
     }
     parameter_meta {

@@ -189,3 +189,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/GetCompositeTRs.wdl
+- name: GetMeiWindows
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/GetMeiWindows.wdl
