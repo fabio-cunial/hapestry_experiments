@@ -5,9 +5,9 @@ import java.util.zip.*;
 
 
 /**
- * Finds kanpig windows that contain >=2 records with similar kanpig score.
+ * Finds kanpig-like windows that contain >=2 records with similar kanpig score.
  */
-public class FindKanpigWindows {
+public class FindKanpigLikeWindows {
     
     /**
      * java FindKanpigWindows dipcall_50_merged.vcf.gz 50 500 0.9 0.97 4 2
@@ -28,6 +28,7 @@ public class FindKanpigWindows {
         String str, currentChr;
         BufferedReader br;
         int[] lengths = new int[CAPACITY];
+        int[] types = new int[CAPACITY];
         HashMap<String,Integer>[] kmers = new HashMap[CAPACITY];
         String[] tokens;
         
@@ -41,7 +42,7 @@ public class FindKanpigWindows {
             pos=Integer.parseInt(tokens[1]);
             if (!tokens[0].equals(currentChr) || pos>currentLast+NEIGHDIST) {
                 if (last>=0) {
-                    nPairs=nCompatiblePairs(kmers,lengths,last,SIZEMIN,MINKFREQ,SIZESIM,SEQSIM);
+                    nPairs=nCompatiblePairs(kmers,lengths,types,last,SIZEMIN,MINKFREQ,SIZESIM,SEQSIM);
                     if (nPairs!=0) System.out.println(currentChr+"\t"+currentFirst+"\t"+currentLast+"\t"+nPairs);
                 }
                 // Next window
@@ -56,16 +57,22 @@ public class FindKanpigWindows {
                 int[] newLengths = new int[lengths.length*2];
                 System.arraycopy(lengths,0,newLengths,0,lengths.length);
                 lengths=newLengths;
+                int[] newTypes = new int[types.length*2];
+                System.arraycopy(types,0,newTypes,0,types.length);
+                types=newTypes;
             }
             if (kmers[last]==null) kmers[last] = new HashMap<String,Integer>();
             loadKmers(tokens[3].substring(1),tokens[4].substring(1),KMER,kmers[last]);
             if (tokens[3].length()==1 && tokens[4].length()>1) {  // INS
+                types[last]=0;
                 lengths[last]=tokens[4].length()-1;
             }
             else if (tokens[4].length()==1 && tokens[3].length()>1) {  // DEL
+                types[last]=1;
                 lengths[last]=tokens[3].length()-1;
             }
             else {  // Replacement
+                types[last]=2;
                 lengths[last]=(tokens[4].length()-1+tokens[3].length()-1)/2;
             }
             if (pos+tokens[3].length()>currentLast) currentLast=pos+tokens[3].length();
@@ -73,7 +80,7 @@ public class FindKanpigWindows {
         }
         br.close();
         if (last>=0) {
-            nPairs=nCompatiblePairs(kmers,lengths,last,SIZEMIN,MINKFREQ,SIZESIM,SEQSIM);
+            nPairs=nCompatiblePairs(kmers,lengths,types,last,SIZEMIN,MINKFREQ,SIZESIM,SEQSIM);
             if (nPairs!=0) System.out.println(currentChr+"\t"+currentFirst+"\t"+currentLast+"\t"+nPairs);
         }
     }
@@ -97,7 +104,7 @@ public class FindKanpigWindows {
     }
     
     
-    private static final int nCompatiblePairs(final HashMap<String,Integer>[] kmers, final int[] lengths, final int last, final int sizemin, final int minkfreq, final double sizesim, final double seqsim) {
+    private static final int nCompatiblePairs(final HashMap<String,Integer>[] kmers, final int[] lengths, final int[] types, final int last, final int sizemin, final int minkfreq, final double sizesim, final double seqsim) {
         int i, j;
         int nPairs;
         
@@ -105,7 +112,7 @@ public class FindKanpigWindows {
         for (i=0; i<last; i++) {
             if (lengths[i]<sizemin) continue;
             for (j=i+1; j<=last; j++) {
-                if (lengths[j]<sizemin) continue;
+                if (lengths[j]<sizemin || types[j]!=types[i]) continue;
                 if (Math.min(lengths[i],lengths[j])/Math.max(lengths[i],lengths[j])>=sizesim && kmerSimilarity(kmers[i],kmers[j],minkfreq)>=seqsim) nPairs++;
             }
         }
