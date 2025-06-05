@@ -104,7 +104,8 @@ task SubsampleImpl {
             if [[ ${ADDRESS} == gs://* ]]; then
                 SUCCESS=$(gsutil -u ~{billing_project} cp ${ADDRESS} . && echo 1 || echo 0)
             elif [[ ${ADDRESS} == s3://* ]]; then
-                SUCCESS=$(aws s3 --no-sign-request cp ${ADDRESS} . && echo 1 || echo 0)
+                aws s3 --no-sign-request cp ${ADDRESS} .
+                SUCCESS="1"
             else
                 SUCCESS=$(wget ${ADDRESS} && echo 1 || echo 0)
             fi
