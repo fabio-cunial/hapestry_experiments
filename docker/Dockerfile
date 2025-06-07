@@ -318,3 +318,10 @@ RUN wget https://github.com/PacificBiosciences/HiPhase/releases/download/v${hiph
 COPY *.java .
 RUN javac *.java
 COPY *.py .
+
+
+# AWS
+RUN wget https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip \
+    && unzip awscli-exe-linux-x86_64.zip \
+    && ./aws/install \
+    && aws --version
