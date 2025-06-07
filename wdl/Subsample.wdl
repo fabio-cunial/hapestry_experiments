@@ -114,7 +114,7 @@ task SubsampleImpl {
             fi
             FILE_NAME=$(basename ${ADDRESS})
             if [[ ${FILE_NAME} == *.bam ]]; then
-                ${TIME_COMMAND} samtools fastq -@ ${N_THREADS} -n ${FILE_NAME} > ${FILE_ID}.fastq.gz 
+                ${TIME_COMMAND} samtools fastq -@ ${N_THREADS} -n ${FILE_NAME} | pigz --processes ${N_THREADS} --fast --to-stdout > ${FILE_ID}.fastq.gz
             elif [[ ${FILE_NAME} == *.fastq.gz ]]; then
                 mv ${FILE_NAME} ${FILE_ID}.fastq.gz
             elif [[ ${FILE_NAME} == *.fastq ]]; then
