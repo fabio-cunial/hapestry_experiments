@@ -133,8 +133,12 @@ task SubsampleImpl {
         done < randomized.txt
         mkdir ./fastqs
         mv *.fastq.gz ./fastqs
-        #${TIME_COMMAND} ~{docker_dir}/seqkit scat --threads ${N_THREADS} -f --out-format fastq ./fastqs > tmp1.fastq.gz
-        ${TIME_COMMAND} zcat ./fastqs/*.fastq.gz | gzip -c --fast > tmp1.fastq.gz
+        if [ ${FILE_ID} -eq 1 ]; then
+            mv ./fastqs/1.fastq.gz tmp1.fastq.gz
+        else
+            #${TIME_COMMAND} ~{docker_dir}/seqkit scat --threads ${N_THREADS} -f --out-format fastq ./fastqs > tmp1.fastq.gz
+            ${TIME_COMMAND} zcat ./fastqs/*.fastq.gz | gzip -c --fast > tmp1.fastq.gz
+        fi
         rm -rf ./fastqs/
         df -h
         
