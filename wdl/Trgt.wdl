@@ -115,10 +115,10 @@ task TrgtImpl {
         mv tmp4.vcf.gz.tbi ~{sample_id}.trgt.resolved.vcf.gz.tbi
     >>>
     output {
-        File output_vcf_gz = work_dir + "/" + sample_id + ".trgt.vcf.gz"
-        File output_tbi = work_dir + "/" + sample_id + ".trgt.vcf.gz.tbi"
-        File output_resolved_vcf_gz = work_dir + "/" + sample_id + ".trgt.resolved.vcf.gz"
-        File output_resolved_tbi = work_dir + "/" + sample_id + ".trgt.resolved.vcf.gz.tbi"
+        File output_vcf_gz = sample_id + ".trgt.vcf.gz"
+        File output_tbi = sample_id + ".trgt.vcf.gz.tbi"
+        File output_resolved_vcf_gz = sample_id + ".trgt.resolved.vcf.gz"
+        File output_resolved_tbi = sample_id + ".trgt.resolved.vcf.gz.tbi"
     }
     runtime {
         docker: "fcunial/hapestry_experiments"
