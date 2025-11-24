@@ -11,8 +11,8 @@ workflow Trgt {
         File ref_fa
         File ref_fai
         File repeat_catalog
-        Int n_cpu = 64
-        Int ram_gb = 64
+        Int n_cpu = 32
+        Int ram_gb = 16
     }
     parameter_meta {
         sex: "M or F"
@@ -67,17 +67,14 @@ task TrgtImpl {
     }
 
     String docker_dir = "/hapestry"
-    String work_dir = "/cromwell_root/hapestry"
     Int disk_size_gb = 50 + 2*ceil(size(input_bam,"GB")) + 2*ceil(size(repeat_catalog,"GB"))
 
     command <<<
         set -euxo pipefail
-        mkdir -p ~{work_dir}
-        cd ~{work_dir}
         
         N_SOCKETS="$(lscpu | grep '^Socket(s):' | awk '{print $NF}')"
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
-        N_THREADS=$(( ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
+        N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         TIME_COMMAND="/usr/bin/time --verbose"
         EFFECTIVE_MEM_GB=$(( ~{ram_gb} - 2 ))
         
