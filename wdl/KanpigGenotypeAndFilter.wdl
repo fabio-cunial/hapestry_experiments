@@ -69,12 +69,9 @@ task RemoveSamples {
     }
     
     String docker_dir = "/hapestry"
-    String work_dir = "/cromwell_root/hapestry"
     
     command <<<
         set -euxo pipefail
-        mkdir -p ~{work_dir}
-        cd ~{work_dir}
         
         TIME_COMMAND="/usr/bin/time --verbose"
         N_SOCKETS="$(lscpu | grep '^Socket(s):' | awk '{print $NF}')"
@@ -94,8 +91,8 @@ task RemoveSamples {
     >>>
 
     output {
-        File cleaned_vcf_gz = work_dir + "/cleaned.vcf.gz"
-        File cleaned_tbi = work_dir + "/cleaned.vcf.gz.tbi"
+        File cleaned_vcf_gz = "cleaned.vcf.gz"
+        File cleaned_tbi = "cleaned.vcf.gz.tbi"
     }
     runtime {
         docker: "fcunial/hapestry_experiments"
@@ -129,15 +126,12 @@ task Kanpig {
     }
     
     String docker_dir = "/hapestry"
-    String work_dir = "/cromwell_root/hapestry"
     String output_prefix = "kanpig_regenotyped"
     String kanpig_params_multisample =  "--sizemin ~{min_sv_length} --sizemax 10000 --neighdist 500 --gpenalty 0.04 --hapsim 0.97"
     Int disk_size_gb = 200 + ceil(size(reference_fa,"GB")) + 100*ceil(size(input_vcf_gz,"GB")) + 2*ceil(size(alignments_bam,"GB"))
 
     command <<<
         set -euxo pipefail
-        mkdir -p ~{work_dir}
-        cd ~{work_dir}
         
         TIME_COMMAND="/usr/bin/time --verbose"
         N_SOCKETS="$(lscpu | grep '^Socket(s):' | awk '{print $NF}')"
@@ -165,8 +159,8 @@ task Kanpig {
     >>>
 
     output {
-        File regenotyped_gt = work_dir + "/gt.txt"
-        File regenotyped_format = work_dir + "/format.txt"
+        File regenotyped_gt = "gt.txt"
+        File regenotyped_format = "format.txt"
     }
     runtime {
         docker: "fcunial/hapestry_experiments"
@@ -203,12 +197,8 @@ task Merge {
         gt_columns: "Just the GT column from the output of kanpig. The first line must be the sample ID."
     }
     
-    String work_dir = "/cromwell_root/hapestry"
-    
     command <<<
         set -euxo pipefail
-        mkdir -p ~{work_dir}
-        cd ~{work_dir}
         
         TIME_COMMAND="/usr/bin/time --verbose"
         N_SOCKETS="$(lscpu | grep '^Socket(s):' | awk '{print $NF}')"
@@ -298,8 +288,8 @@ task Merge {
     >>>
 
     output {
-        File output_vcf_gz = work_dir + "/filtered.vcf.gz"
-        File output_tbi = work_dir + "/filtered.vcf.gz.tbi"
+        File output_vcf_gz = "filtered.vcf.gz"
+        File output_tbi = "filtered.vcf.gz.tbi"
     }
     runtime {
         docker: "fcunial/hapestry_experiments"
