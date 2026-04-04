@@ -53,7 +53,7 @@ task Impl {
         N_SOCKETS="$(lscpu | grep '^Socket(s):' | awk '{print $NF}')"
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
         N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
-        export BCFTOOLS_PLUGINS="~{docker_dir}/bcftools-1.22/plugins"
+        export BCFTOOLS_PLUGINS="~{docker_dir}/bcftools-1.21/plugins"
         
         # Splitting
         bcftools view --header-only ~{vcf_gz} | tail -n 1 | tr '\t' '\n' | tail -n +10 > samples.txt
