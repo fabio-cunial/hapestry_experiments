@@ -2,7 +2,7 @@ version 1.0
 
 
 #
-task SplitIntersampleVcf {
+workflow SplitIntersampleVcf {
     input {
         File vcf_gz
         File vcf_gz_tbi
@@ -12,7 +12,7 @@ task SplitIntersampleVcf {
         
         String remote_outdir
         
-        String docker_image
+        String docker_image = "fcunial/hapestry_experiments"
         Int n_cpu = 2
         Int ram_size_gb = 2
     }
