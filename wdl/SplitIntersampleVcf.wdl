@@ -43,7 +43,7 @@ task Impl {
         Int ram_size_gb = 2
     }
 
-    Int disk_size_gb = 1 + ceil(3 * (size(vcf_gz, "GiB")))
+    Int disk_size_gb = 50*ceil((size(vcf_gz,"GiB")))
     String docker_dir = "/hapestry"
 
     command <<<
