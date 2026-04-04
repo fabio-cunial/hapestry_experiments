@@ -6,6 +6,10 @@ task SplitIntersampleVcf {
     input {
         File vcf_gz
         File vcf_gz_tbi
+        Int min_sv_length
+        String coverage_id
+        String caller_id
+        
         String remote_outdir
         
         String docker_image
@@ -37,7 +41,7 @@ task SplitIntersampleVcf {
             rm -f ${FILE}*
         done
         ls -laht
-        gcloud storage mv '*_extracted.vcf.gz*' ~{remote_outdir}/
+        gcloud storage mv '*_extracted.vcf.gz*' ~{remote_outdir}/~{min_sv_length}bp/~{coverage_id}/~{caller_id}/
     >>>
 
     output {
