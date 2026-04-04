@@ -27,6 +27,11 @@ workflow SplitIntersampleVcf {
 }
 
 
+# Performance on a 2-core VM with 2 GB of RAM:
+#
+# COMMAND               CPU         RAM         TIME
+# bcftools +split       100%        22MB        10m
+# bcftools view         150%        13MB        6s
 #
 task Impl {
     input {
