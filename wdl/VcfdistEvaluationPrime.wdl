@@ -78,22 +78,26 @@ task Impl {
         
         # Preparing the input VCFs
         ${TIME_COMMAND} gcloud storage cp ~{remote_input_dir}/~{min_sv_length}bp/~{coverage_id}/~{caller_id}/~{sample_id}_extracted.vcf.'gz*' .
+        mv ~{sample_dipcall_vcf_gz} dipcall.vcf.gz
+        mv ~{sample_dipcall_tbi} dipcall.vcf.gz.tbi
+        mv ~{reference_fa} reference.fa
+        mv ~{reference_fai} reference.fa.fai
         if ~{defined(region)}
         then
             ${TIME_COMMAND} bcftools view --threads ${N_THREADS} --output-type z ~{sample_id}_extracted.vcf.gz ~{region} --output query.vcf.gz
             bcftools index --threads ${N_THREADS} -f -t query.vcf.gz
-            ${TIME_COMMAND} bcftools view --threads ${N_THREADS} --output-type z ~{sample_dipcall_vcf_gz} ~{region} --output truth.vcf.gz
+            ${TIME_COMMAND} bcftools view --threads ${N_THREADS} --output-type z dipcall.vcf.gz ~{region} --output truth.vcf.gz
             bcftools index --threads ${N_THREADS} -f -t truth.vcf.gz
         else
             mv ~{sample_id}_extracted.vcf.gz query.vcf.gz
             mv ~{sample_id}_extracted.vcf.gz.tbi query.vcf.gz.tbi
-            mv ~{sample_dipcall_vcf_gz} truth.vcf.gz
-            mv ~{sample_dipcall_tbi} truth.vcf.gz.tbi
+            mv dipcall.vcf.gz truth.vcf.gz
+            mv dipcall.vcf.gz.tbi truth.vcf.gz.tbi
         fi
 
         # Remark: `--max-supercluster-size` has to be >= `--largest-variant + 2`
         # See https://github.com/TimD1/vcfdist/wiki/02-Parameters-and-Usage
-        ${TIME_COMMAND} vcfdist query.vcf.gz truth.vcf.gz ~{reference_fa} \
+        ${TIME_COMMAND} vcfdist query.vcf.gz truth.vcf.gz reference.fa \
             --max-threads ${N_THREADS} --max-ram ${EFFECTIVE_RAM_GB} --verbosity 1 \
             --realign-query --realign-truth \
             --sv-threshold ~{min_sv_length} --largest-variant 10000 \
