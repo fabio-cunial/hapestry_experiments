@@ -11,6 +11,32 @@ workflow SplitIntersampleVcf {
         String caller_id
         
         String remote_outdir
+    }
+
+    call Impl {
+        input:
+            vcf_gz = vcf_gz,
+            vcf_gz_tbi = vcf_gz_tbi,
+            min_sv_length = min_sv_length,
+            coverage_id = coverage_id,
+            caller_id = caller_id,
+            
+            remote_outdir = remote_outdir
+    }
+
+}
+
+
+#
+task Impl {
+    input {
+        File vcf_gz
+        File vcf_gz_tbi
+        Int min_sv_length
+        String coverage_id
+        String caller_id
+        
+        String remote_outdir
         
         String docker_image = "fcunial/hapestry_experiments"
         Int n_cpu = 2
