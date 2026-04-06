@@ -14,6 +14,7 @@ workflow VcfdistEvaluationPrime {
         Int min_sv_length
         String? region = "chr1"
         File confident_bed
+        String vcfdist_mode
         
         File reference_fa
         File reference_fai
@@ -36,6 +37,7 @@ workflow VcfdistEvaluationPrime {
             min_sv_length = min_sv_length,
             region = region,
             confident_bed = confident_bed,
+            vcfdist_mode = vcfdist_mode,
             reference_fa = reference_fa,
             reference_fai = reference_fai,
             docker_image = docker_image
@@ -43,6 +45,10 @@ workflow VcfdistEvaluationPrime {
 }
 
 
+# Performance on an 8-core, 32GB VM, chr1 only, truvari+kanpig 10bp, 4x:
+#
+# COMMAND           CPU         RAM         TIME        COST
+# vcfdist           200%        20G         4h          $2
 #
 task Impl {
     input {
@@ -56,13 +62,14 @@ task Impl {
         Int min_sv_length
         String? region
         File confident_bed
+        String vcfdist_mode
         
         File reference_fa
         File reference_fai
 
         String docker_image
-        Int n_cpu = 8
-        Int ram_size_gb = 32
+        Int n_cpu = 2
+        Int ram_size_gb = 24
         Int disk_size_gb = 50
         Int preemptible_number = 0
     }
@@ -94,16 +101,49 @@ task Impl {
             mv dipcall.vcf.gz truth.vcf.gz
             mv dipcall.vcf.gz.tbi truth.vcf.gz.tbi
         fi
-
-        # Remark: `--max-supercluster-size` has to be >= `--largest-variant + 2`
+        
         # See https://github.com/TimD1/vcfdist/wiki/02-Parameters-and-Usage
-        ${TIME_COMMAND} vcfdist query.vcf.gz truth.vcf.gz reference.fa \
-            --max-threads ${N_THREADS} --max-ram ${EFFECTIVE_RAM_GB} --verbosity 1 \
-            --realign-query --realign-truth \
-            --sv-threshold ~{min_sv_length} --largest-variant 10000 \
-            --cluster biwfa --max-supercluster-size 10002 \
-            --bed ~{confident_bed} \
-            --prefix ~{sample_id}_
+        if [ ~{vcfdist_mode} -eq 0 ]; then
+            # Default
+            ${TIME_COMMAND} vcfdist query.vcf.gz truth.vcf.gz reference.fa \
+                --max-threads ${N_THREADS} --max-ram ${EFFECTIVE_RAM_GB} --verbosity 1 \
+                --realign-query --realign-truth \
+                --bed ~{confident_bed} \
+                --prefix ~{sample_id}_
+        elif [ ~{vcfdist_mode} -eq 1 ]; then        
+            # Default plus --sv-threshold
+            ${TIME_COMMAND} vcfdist query.vcf.gz truth.vcf.gz reference.fa \
+                --sv-threshold ~{min_sv_length} \
+                \
+                --max-threads ${N_THREADS} --max-ram ${EFFECTIVE_RAM_GB} --verbosity 1 \
+                --realign-query --realign-truth \
+                --bed ~{confident_bed} \
+                --prefix ~{sample_id}_
+        elif [ ~{vcfdist_mode} -eq 2 ]; then
+            # Default plus --largest-variant
+            # Remark: `--max-supercluster-size` has to be >= `--largest-variant
+            # + 2`
+            ${TIME_COMMAND} vcfdist query.vcf.gz truth.vcf.gz reference.fa \
+                --largest-variant 10000 \
+                --max-supercluster-size 10002 \
+                \        
+                --max-threads ${N_THREADS} --max-ram ${EFFECTIVE_RAM_GB} --verbosity 1 \
+                --realign-query --realign-truth \
+                --bed ~{confident_bed} \
+                --prefix ~{sample_id}_
+        elif [ ~{vcfdist_mode} -eq 2 ]; then
+            # Default plus --sv-threshold plus --largest-variant
+            ${TIME_COMMAND} vcfdist query.vcf.gz truth.vcf.gz reference.fa \
+                --sv-threshold ~{min_sv_length} \
+                \
+                --largest-variant 10000 \
+                --max-supercluster-size 10002 \
+                \
+                --max-threads ${N_THREADS} --max-ram ${EFFECTIVE_RAM_GB} --verbosity 1 \
+                --realign-query --realign-truth \
+                --bed ~{confident_bed} \
+                --prefix ~{sample_id}_
+        fi
         ls -laht 1>&2
         df -h 1>&2
     >>>

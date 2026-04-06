@@ -313,6 +313,19 @@ RUN wget https://github.com/PacificBiosciences/HiPhase/releases/download/v${hiph
     && chmod +x ./hiphase \
     && ./hiphase -h
 
+# ----------------------------- EVALUATION TOOLS -------------------------------
+
+# VCFDIST
+ARG vcfdist_version=2.6.4
+ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+RUN wget https://github.com/TimD1/vcfdist/archive/refs/tags/v${vcfdist_version}.tar.gz \
+    && tar xzf v${vcfdist_version}.tar.gz \
+    && rm -f v${vcfdist_version}.tar.gz \
+    && cd vcfdist-${vcfdist_version}/src \
+    && make -j 16 \
+    && make install \
+    && vcfdist --help
+
 
 # ----------------------------- CUSTOM SCRIPTS ---------------------------------
 COPY *.java .
