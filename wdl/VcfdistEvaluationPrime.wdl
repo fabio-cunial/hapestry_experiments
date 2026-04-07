@@ -14,7 +14,7 @@ workflow VcfdistEvaluationPrime {
         Int min_sv_length
         String? region = "chr1"
         File confident_bed
-        String vcfdist_mode
+        Int vcfdist_mode
         
         File reference_fa
         File reference_fai
@@ -62,7 +62,7 @@ task Impl {
         Int min_sv_length
         String? region
         File confident_bed
-        String vcfdist_mode
+        Int vcfdist_mode
         
         File reference_fa
         File reference_fai
@@ -131,7 +131,7 @@ task Impl {
                 --realign-query --realign-truth \
                 --bed ~{confident_bed} \
                 --prefix ~{sample_id}_
-        elif [ ~{vcfdist_mode} -eq 2 ]; then
+        elif [ ~{vcfdist_mode} -eq 3 ]; then
             # Default plus --sv-threshold plus --largest-variant
             ${TIME_COMMAND} vcfdist query.vcf.gz truth.vcf.gz reference.fa \
                 --sv-threshold ~{min_sv_length} \
