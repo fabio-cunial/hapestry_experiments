@@ -72,28 +72,28 @@ task Impl {
         Int ram_size_gb = 24
         Int disk_size_gb = 50
         Int preemptible_number = 0
+        String time_command = "/usr/bin/time --verbose"
     }
 
     command <<<
         set -euxo pipefail
         
-        TIME_COMMAND="/usr/bin/time --verbose"
         N_SOCKETS="$(lscpu | grep '^Socket(s):' | awk '{print $NF}')"
         N_CORES_PER_SOCKET="$(lscpu | grep '^Core(s) per socket:' | awk '{print $NF}')"
         N_THREADS=$(( 2 * ${N_SOCKETS} * ${N_CORES_PER_SOCKET} ))
         EFFECTIVE_RAM_GB=$(( ~{ram_size_gb} - 1 ))
         
         # Preparing the input VCFs
-        ${TIME_COMMAND} gcloud storage cp ~{remote_input_dir}/~{min_sv_length}bp/~{coverage_id}/~{caller_id}/~{sample_id}_extracted.vcf.'gz*' .
+        ~{time_command} gcloud storage cp ~{remote_input_dir}/~{min_sv_length}bp/~{coverage_id}/~{caller_id}/~{sample_id}_extracted.vcf.'gz*' .
         mv ~{sample_dipcall_vcf_gz} dipcall.vcf.gz
         mv ~{sample_dipcall_tbi} dipcall.vcf.gz.tbi
         mv ~{reference_fa} reference.fa
         mv ~{reference_fai} reference.fa.fai
         if ~{defined(region)}
         then
-            ${TIME_COMMAND} bcftools view --threads ${N_THREADS} --output-type z ~{sample_id}_extracted.vcf.gz ~{region} --output query.vcf.gz
+            ~{time_command} bcftools view --threads ${N_THREADS} --output-type z ~{sample_id}_extracted.vcf.gz ~{region} --output query.vcf.gz
             bcftools index --threads ${N_THREADS} -f -t query.vcf.gz
-            ${TIME_COMMAND} bcftools view --threads ${N_THREADS} --output-type z dipcall.vcf.gz ~{region} --output truth.vcf.gz
+            ~{time_command} bcftools view --threads ${N_THREADS} --output-type z dipcall.vcf.gz ~{region} --output truth.vcf.gz
             bcftools index --threads ${N_THREADS} -f -t truth.vcf.gz
         else
             mv ~{sample_id}_extracted.vcf.gz query.vcf.gz
@@ -105,14 +105,14 @@ task Impl {
         # See https://github.com/TimD1/vcfdist/wiki/02-Parameters-and-Usage
         if [ ~{vcfdist_mode} -eq 0 ]; then
             # Default
-            ${TIME_COMMAND} vcfdist query.vcf.gz truth.vcf.gz reference.fa \
+            ~{time_command} vcfdist query.vcf.gz truth.vcf.gz reference.fa \
                 --max-threads ${N_THREADS} --max-ram ${EFFECTIVE_RAM_GB} --verbosity 1 \
                 --realign-query --realign-truth \
                 --bed ~{confident_bed} \
                 --prefix ~{sample_id}_
         elif [ ~{vcfdist_mode} -eq 1 ]; then        
             # Default plus --sv-threshold
-            ${TIME_COMMAND} vcfdist query.vcf.gz truth.vcf.gz reference.fa \
+            ~{time_command} vcfdist query.vcf.gz truth.vcf.gz reference.fa \
                 --sv-threshold ~{min_sv_length} \
                 \
                 --max-threads ${N_THREADS} --max-ram ${EFFECTIVE_RAM_GB} --verbosity 1 \
@@ -123,7 +123,7 @@ task Impl {
             # Default plus --largest-variant
             # Remark: `--max-supercluster-size` has to be >= `--largest-variant
             # + 2`
-            ${TIME_COMMAND} vcfdist query.vcf.gz truth.vcf.gz reference.fa \
+            ~{time_command} vcfdist query.vcf.gz truth.vcf.gz reference.fa \
                 --largest-variant 10000 \
                 --max-supercluster-size 10002 \
                 \        
@@ -133,7 +133,7 @@ task Impl {
                 --prefix ~{sample_id}_
         elif [ ~{vcfdist_mode} -eq 3 ]; then
             # Default plus --sv-threshold plus --largest-variant
-            ${TIME_COMMAND} vcfdist query.vcf.gz truth.vcf.gz reference.fa \
+            ~{time_command} vcfdist query.vcf.gz truth.vcf.gz reference.fa \
                 --sv-threshold ~{min_sv_length} \
                 \
                 --largest-variant 10000 \
