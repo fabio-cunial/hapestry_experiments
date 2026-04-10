@@ -3,7 +3,11 @@ import java.io.*;
 
 
 /**
- * 
+ * Given two BED files with format `CHR,FIRST,LAST,DISTANCE` extracted from 
+ * vcfdist's `superclusters.tsv` (each BED contains disjoint intervals), the 
+ * program builds maximal connected components of overlapping or adjacent 
+ * intervals across the two files, and for each component it prints the sum of
+ * all distances in each file.
  */
 public class CompareSuperclusters {
     
@@ -25,17 +29,10 @@ public class CompareSuperclusters {
         String[] tokens;
         Interval[] intervals;
         
-        // Loading all intervals from both files in a single list
+        // Loading all intervals from both files into a single list
         intervals = new Interval[N_INTERVALS];
+        p=-1;
         br = new BufferedReader(new FileReader(LEFT_BED));
-        str=br.readLine(); p=-1;
-        while (str!=null) {
-            tokens=str.split("\t");
-            intervals[++p] = new Interval(false,tokens[0],Integer.parseInt(tokens[1]),Integer.parseInt(tokens[2]),Integer.parseInt(tokens[3]));
-            str=br.readLine();
-        }
-        br.close();
-        br = new BufferedReader(new FileReader(RIGHT_BED));
         str=br.readLine();
         while (str!=null) {
             tokens=str.split("\t");
@@ -43,7 +40,15 @@ public class CompareSuperclusters {
             str=br.readLine();
         }
         br.close();
-        Arrays.sort(intervals,0,intervals.length);
+        br = new BufferedReader(new FileReader(RIGHT_BED));
+        str=br.readLine();
+        while (str!=null) {
+            tokens=str.split("\t");
+            intervals[++p] = new Interval(false,tokens[0],Integer.parseInt(tokens[1]),Integer.parseInt(tokens[2]),Integer.parseInt(tokens[3]));
+            str=br.readLine();
+        }
+        br.close();
+        Arrays.sort(intervals,0,N_INTERVALS);
         
         // Computing connected components of overlapping or adjacent intervals
         i=0;
@@ -55,7 +60,7 @@ public class CompareSuperclusters {
             }
             sumLeft=0; sumRight=0;
             for (k=i; k<j; k++) {
-                if (intervals[k].side) sumLeft+=intervals[k].distance;
+                if (intervals[k].isLeft) sumLeft+=intervals[k].distance;
                 else sumRight+=intervals[k].distance;
             }
             System.out.println(intervals[i].chr+"\t"+intervals[i].first+"\t"+clusterLast+"\t"+sumLeft+"\t"+sumRight);
@@ -65,12 +70,12 @@ public class CompareSuperclusters {
     
     
     private static class Interval implements Comparable {
-        public boolean side;
+        public boolean isLeft;
         public int first, last, distance;
         public String chr;
         
-        public Interval(boolean s, String c, int f, int l, int d) {
-            this.side=s;
+        public Interval(boolean i, String c, int f, int l, int d) {
+            this.isLeft=i;
             this.chr=c;
             this.first=f;
             this.last=l;
