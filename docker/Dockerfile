@@ -316,7 +316,8 @@ RUN wget https://github.com/PacificBiosciences/HiPhase/releases/download/v${hiph
 # ----------------------------- EVALUATION TOOLS -------------------------------
 
 # VCFDIST
-ARG vcfdist_version=2.6.4
+#ARG vcfdist_version=2.6.4
+ARG vcfdist_version=2.5.3
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 RUN wget https://github.com/TimD1/vcfdist/archive/refs/tags/v${vcfdist_version}.tar.gz \
     && tar xzf v${vcfdist_version}.tar.gz \
