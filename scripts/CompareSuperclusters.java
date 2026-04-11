@@ -10,9 +10,9 @@ import java.io.*;
  * all distances in each file.
  */
 public class CompareSuperclusters {
-    
     /**
-     *
+     * Prints to STDOUT one record per component, and to STDERR the fraction of 
+     * components whose left distance is smaller that the right distance.
      */
 	public static void main(String[] args) throws IOException {
 		final String LEFT_BED = args[0];
@@ -23,7 +23,7 @@ public class CompareSuperclusters {
         final int N_INTERVALS = N_LEFT+N_RIGHT;
 		
         int i, j, k, p;
-        int componentLast, sumLeft, sumRight;
+        int componentLast, sumLeft, sumRight, numerator, denominator;
         String str;
 		BufferedReader br;
         String[] tokens;
@@ -51,6 +51,7 @@ public class CompareSuperclusters {
         Arrays.sort(intervals,0,N_INTERVALS);
         
         // Computing connected components of overlapping or adjacent intervals
+        numerator=0; denominator=0;
         i=0;
         while (i<N_INTERVALS) {
             componentLast=intervals[i].last;
@@ -64,8 +65,11 @@ public class CompareSuperclusters {
                 else sumRight+=intervals[k].distance;
             }
             System.out.println(intervals[i].chr+"\t"+intervals[i].first+"\t"+componentLast+"\t"+sumLeft+"\t"+sumRight);
+            denominator++;
+            if (sumLeft<sumRight) numerator++;
             i=j;
         }
+        System.err.println(""+((double)(numerator))/denominator);
 	}
     
     
