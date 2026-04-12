@@ -201,3 +201,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/VcfdistEvaluationPrime.wdl
+- name: TruvariEvaluation
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/TruvariEvaluation.wdl

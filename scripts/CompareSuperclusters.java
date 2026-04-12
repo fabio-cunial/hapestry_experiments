@@ -23,7 +23,8 @@ public class CompareSuperclusters {
         final int N_INTERVALS = N_LEFT+N_RIGHT;
 		
         int i, j, k, p;
-        int componentLast, sumLeft, sumRight, numerator, denominator;
+        int componentLast, sumLeft, sumRight, denominator;
+        double numeratorLeft, numeratorRight;
         String str;
 		BufferedReader br;
         String[] tokens;
@@ -51,7 +52,7 @@ public class CompareSuperclusters {
         Arrays.sort(intervals,0,N_INTERVALS);
         
         // Computing connected components of overlapping or adjacent intervals
-        numerator=0; denominator=0;
+        numeratorLeft=0.0; numeratorRight=0.0; denominator=0;
         i=0;
         while (i<N_INTERVALS) {
             componentLast=intervals[i].last;
@@ -66,10 +67,11 @@ public class CompareSuperclusters {
             }
             System.out.println(intervals[i].chr+"\t"+intervals[i].first+"\t"+componentLast+"\t"+sumLeft+"\t"+sumRight);
             denominator++;
-            if (sumLeft<sumRight) numerator++;
+            if (sumLeft<sumRight) numeratorLeft+=1.0;
+            else if (sumRight<sumLeft) numeratorRight+=1.0;
             i=j;
         }
-        System.err.println(""+((double)(numerator))/denominator);
+        System.err.println((numeratorLeft/denominator)+","+((denominator-numeratorLeft-numeratorRight)/denominator)+","+(numeratorRight/denominator));
 	}
     
     
