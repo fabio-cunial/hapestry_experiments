@@ -19,6 +19,7 @@ workflow TruvariEvaluation {
         File reference_fai
         
         String truvari_extra_args = " "
+        File? tr_bed
 
         String docker_image = "fcunial/truvari_refine"
     }
@@ -41,6 +42,7 @@ workflow TruvariEvaluation {
             reference_fa = reference_fa,
             reference_fai = reference_fai,
             truvari_extra_args = truvari_extra_args,
+            tr_bed = tr_bed,
             docker_image = docker_image
     }
 }
@@ -68,6 +70,7 @@ task Impl {
         File reference_fai
         
         String truvari_extra_args
+        File? tr_bed
 
         String docker_image
         Int n_cpu = 2
@@ -102,9 +105,16 @@ task Impl {
             mv dipcall.vcf.gz truth.vcf.gz
             mv dipcall.vcf.gz.tbi truth.vcf.gz.tbi
         fi
+        if ~{defined(tr_bed)}
+        then
+            REGIONS_STRING="--regions ~{tr_bed}"
+        else
+            REGIONS_STRING=""
+        fi
         
         # Benchmarking
-        ${TIME_COMMAND} truvari bench --sizemin ~{min_sv_length} --sizefilt ~{min_sv_length} --sizemax 10000 --includebed ~{confident_bed} --base truth.vcf.gz --comp query.vcf.gz --reference reference.fa --refine ~{truvari_extra_args} --output ~{sample_id}_truvari/
+        ${TIME_COMMAND} truvari bench --sizemin ~{min_sv_length} --sizefilt ~{min_sv_length} --sizemax 10000 --includebed ~{confident_bed} --base truth.vcf.gz --comp query.vcf.gz --reference reference.fa ~{truvari_extra_args} --output ~{sample_id}_truvari/
+        ${TIME_COMMAND} truvari refine --threads ${N_THREADS} --reference ~{reference_fa} --align mafft --write-phab ${REGIONS_STRING} ~{sample_id}_truvari/        
         ${TIME_COMMAND} tar -czf ~{sample_id}_truvari.tar.gz ~{sample_id}_truvari/
     >>>
 
