@@ -114,7 +114,7 @@ task Impl {
         
         # Benchmarking
         ${TIME_COMMAND} truvari bench --sizemin ~{min_sv_length} --sizefilt ~{min_sv_length} --sizemax 10000 --includebed ~{confident_bed} --base truth.vcf.gz --comp query.vcf.gz --reference reference.fa ~{truvari_extra_args} --output ~{sample_id}_truvari/
-        ${TIME_COMMAND} truvari refine --threads ${N_THREADS} --reference ~{reference_fa} --align mafft --write-phab ${REGIONS_STRING} ~{sample_id}_truvari/        
+        ${TIME_COMMAND} truvari refine --threads ${N_THREADS} --reference reference.fa --align mafft --write-phab ${REGIONS_STRING} ~{sample_id}_truvari/        
         ${TIME_COMMAND} tar -czf ~{sample_id}_truvari.tar.gz ~{sample_id}_truvari/
     >>>
 
