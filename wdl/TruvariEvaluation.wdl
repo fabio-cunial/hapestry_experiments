@@ -17,6 +17,8 @@ workflow TruvariEvaluation {
         
         File reference_fa
         File reference_fai
+        
+        String truvari_extra_args = " "
 
         String docker_image = "fcunial/truvari_refine"
     }
@@ -38,6 +40,7 @@ workflow TruvariEvaluation {
             confident_bed = confident_bed,
             reference_fa = reference_fa,
             reference_fai = reference_fai,
+            truvari_extra_args = truvari_extra_args,
             docker_image = docker_image
     }
 }
@@ -63,6 +66,8 @@ task Impl {
         
         File reference_fa
         File reference_fai
+        
+        String truvari_extra_args
 
         String docker_image
         Int n_cpu = 2
@@ -99,8 +104,8 @@ task Impl {
         fi
         
         # Benchmarking
-        ${TIME_COMMAND} truvari bench --sizemin ~{min_sv_length} --sizefilt ~{min_sv_length} --sizemax 10000 --includebed ~{confident_bed} --base truth.vcf.gz --comp query.vcf.gz --reference reference.fa --refine --output ~{sample_id}_truvari/
-        tar -czf ~{sample_id}_truvari.tar.gz ~{sample_id}_truvari/
+        ${TIME_COMMAND} truvari bench --sizemin ~{min_sv_length} --sizefilt ~{min_sv_length} --sizemax 10000 --includebed ~{confident_bed} --base truth.vcf.gz --comp query.vcf.gz --reference reference.fa --refine ~{truvari_extra_args} --output ~{sample_id}_truvari/
+        ${TIME_COMMAND} tar -czf ~{sample_id}_truvari.tar.gz ~{sample_id}_truvari/
     >>>
 
     output {
