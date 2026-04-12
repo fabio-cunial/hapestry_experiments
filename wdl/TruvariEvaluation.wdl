@@ -99,14 +99,12 @@ task Impl {
         fi
         
         # Benchmarking
-        ${TIME_COMMAND} truvari bench --sizemin ~{min_sv_length} --sizefilt ~{min_sv_length} --sizemax 10000 --includebed ~{confident_bed} --base truth.vcf.gz --comp query.vcf.gz --reference reference.fa --refine --output truvari_output/
-        mv truvari_output/summary.json .
-        mv truvari_output/candidate.refine.bed .
+        ${TIME_COMMAND} truvari bench --sizemin ~{min_sv_length} --sizefilt ~{min_sv_length} --sizemax 10000 --includebed ~{confident_bed} --base truth.vcf.gz --comp query.vcf.gz --reference reference.fa --refine --output ~{sample_id}_truvari/
+        tar -czf ~{sample_id}_truvari.tar.gz ~{sample_id}_truvari/
     >>>
 
     output {
-        File summary_json = "summary.json"
-        File refine_bed = "candidate.refine.bed"
+        File out_tar_gz = sample_id + "_truvari.tar.gz"
     }
 
     runtime {
