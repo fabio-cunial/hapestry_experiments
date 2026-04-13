@@ -151,11 +151,10 @@ task Impl {
         fi
         ls -laht 1>&2
         df -h 1>&2
-        ~{time_command} tar -czf ~{min_sv_length}bp_~{coverage_id}_~{caller_id}_~{sample_id}_vcfdist.tar.gz ~{sample_id}_*
     >>>
 
     output {
-        File out_tar_gz = min_sv_length + "bp_" + coverage_id + "_" + caller_id + "_" + sample_id + "_vcfdist.tar.gz"
+        Array[File] out_files = glob(sample_id+"_*")
     }
 
     runtime {
