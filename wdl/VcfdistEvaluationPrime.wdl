@@ -109,6 +109,7 @@ task Impl {
                 --max-threads ${N_THREADS} --max-ram ${EFFECTIVE_RAM_GB} --verbosity 1 \
                 --realign-query --realign-truth \
                 --bed ~{confident_bed} \
+                --distance \
                 --prefix ~{sample_id}_
         elif [ ~{vcfdist_mode} -eq 1 ]; then        
             # Default plus --sv-threshold
@@ -118,6 +119,7 @@ task Impl {
                 --max-threads ${N_THREADS} --max-ram ${EFFECTIVE_RAM_GB} --verbosity 1 \
                 --realign-query --realign-truth \
                 --bed ~{confident_bed} \
+                --distance \
                 --prefix ~{sample_id}_
         elif [ ~{vcfdist_mode} -eq 2 ]; then
             # Default plus --largest-variant
@@ -130,6 +132,7 @@ task Impl {
                 --max-threads ${N_THREADS} --max-ram ${EFFECTIVE_RAM_GB} --verbosity 1 \
                 --realign-query --realign-truth \
                 --bed ~{confident_bed} \
+                --distance \
                 --prefix ~{sample_id}_
         elif [ ~{vcfdist_mode} -eq 3 ]; then
             # Default plus --sv-threshold plus --largest-variant
@@ -142,25 +145,16 @@ task Impl {
                 --max-threads ${N_THREADS} --max-ram ${EFFECTIVE_RAM_GB} --verbosity 1 \
                 --realign-query --realign-truth \
                 --bed ~{confident_bed} \
+                --distance \
                 --prefix ~{sample_id}_
         fi
         ls -laht 1>&2
         df -h 1>&2
+        ${TIME_COMMAND} tar -czf ~{min_sv_length}bp_~{coverage_id}_~{caller_id}_~{sample_id}_vcfdist.tar.gz ~{sample_id}_*
     >>>
 
     output {
-        File summary_vcf = sample_id + "_summary.vcf"
-        
-        File query_tsv = sample_id + "_query.tsv"
-        File truth_tsv = sample_id + "_truth.tsv"
-        
-        File superclusters_tsv = sample_id + "_superclusters.tsv"
-        File precision_recall_summary_tsv = sample_id + "_precision-recall-summary.tsv"
-        File precision_recall_tsv = sample_id + "_precision-recall.tsv"
-
-        File phase_blocks_tsv = sample_id + "_phase-blocks.tsv"
-        File phasing_summary_tsv = sample_id + "_phasing-summary.tsv"
-        File switchflips_tsv = sample_id + "_switchflips.tsv"
+        File out_tar_gz = min_sv_length + "bp_" + coverage_id + "_" + caller_id + "_" + sample_id + "_vcfdist.tar.gz"
     }
 
     runtime {
