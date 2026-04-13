@@ -49,6 +49,7 @@ workflow VcfdistEvaluationPrime {
 #
 # COMMAND           CPU         RAM         TIME        COST
 # vcfdist           200%        20G         4h          $2
+#   edit distance                           5m
 #
 task Impl {
     input {
@@ -150,7 +151,7 @@ task Impl {
         fi
         ls -laht 1>&2
         df -h 1>&2
-        ${TIME_COMMAND} tar -czf ~{min_sv_length}bp_~{coverage_id}_~{caller_id}_~{sample_id}_vcfdist.tar.gz ~{sample_id}_*
+        ~{time_command} tar -czf ~{min_sv_length}bp_~{coverage_id}_~{caller_id}_~{sample_id}_vcfdist.tar.gz ~{sample_id}_*
     >>>
 
     output {
