@@ -15,6 +15,7 @@ workflow VcfdistEvaluationPrime {
         String? region = "chr1"
         File confident_bed
         Int vcfdist_mode
+        String vcfdist_extra_args = ""
         
         File reference_fa
         File reference_fai
@@ -38,6 +39,7 @@ workflow VcfdistEvaluationPrime {
             region = region,
             confident_bed = confident_bed,
             vcfdist_mode = vcfdist_mode,
+            vcfdist_extra_args = vcfdist_extra_args,
             reference_fa = reference_fa,
             reference_fai = reference_fai,
             docker_image = docker_image
@@ -64,7 +66,8 @@ task Impl {
         String? region
         File confident_bed
         Int vcfdist_mode
-        
+        String vcfdist_extra_args
+
         File reference_fa
         File reference_fai
 
@@ -111,6 +114,7 @@ task Impl {
                 --realign-query --realign-truth \
                 --bed ~{confident_bed} \
                 --distance \
+                ~{vcfdist_extra_args} \
                 --prefix ~{sample_id}_
         elif [ ~{vcfdist_mode} -eq 1 ]; then        
             # Default plus --sv-threshold
@@ -121,6 +125,7 @@ task Impl {
                 --realign-query --realign-truth \
                 --bed ~{confident_bed} \
                 --distance \
+                ~{vcfdist_extra_args} \
                 --prefix ~{sample_id}_
         elif [ ~{vcfdist_mode} -eq 2 ]; then
             # Default plus --largest-variant
@@ -134,6 +139,7 @@ task Impl {
                 --realign-query --realign-truth \
                 --bed ~{confident_bed} \
                 --distance \
+                ~{vcfdist_extra_args} \
                 --prefix ~{sample_id}_
         elif [ ~{vcfdist_mode} -eq 3 ]; then
             # Default plus --sv-threshold plus --largest-variant
@@ -147,6 +153,7 @@ task Impl {
                 --realign-query --realign-truth \
                 --bed ~{confident_bed} \
                 --distance \
+                ~{vcfdist_extra_args} \
                 --prefix ~{sample_id}_
         fi
         ls -laht 1>&2
