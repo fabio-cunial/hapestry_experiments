@@ -145,7 +145,9 @@ END
         
         # Preparing the input VCFs
         ${TIME_COMMAND} gcloud storage cp ~{remote_input_dir}/~{min_sv_length}bp/~{coverage_id}/hapestry/~{sample_id}_extracted.vcf.gz ./hapestry.vcf.gz
+        ${TIME_COMMAND} gcloud storage cp ~{remote_input_dir}/~{min_sv_length}bp/~{coverage_id}/hapestry/~{sample_id}_extracted.vcf.gz.tbi ./hapestry.vcf.gz.tbi
         ${TIME_COMMAND} gcloud storage cp ~{remote_input_dir}/~{min_sv_length}bp/~{coverage_id}/kanpig/~{sample_id}_extracted.vcf.gz ./kanpig.vcf.gz
+        ${TIME_COMMAND} gcloud storage cp ~{remote_input_dir}/~{min_sv_length}bp/~{coverage_id}/kanpig/~{sample_id}_extracted.vcf.gz.tbi ./kanpig.vcf.gz.tbi
         mv ~{sample_dipcall_vcf_gz} dipcall.vcf.gz
         mv ~{sample_dipcall_tbi} dipcall.vcf.gz.tbi
         mv ~{reference_fa} reference.fa
