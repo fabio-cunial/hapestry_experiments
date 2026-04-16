@@ -149,7 +149,7 @@ while read -u 3 ROW; do
         --prefix ${ID}_
     KANPIG_STRING=$(grep 'ALL' ${ID}_distance-summary.tsv | grep 'BEST')
     
-    echo -e "${HAPESTRY_STRING}\t${KANPIG_STRING}" >> ${ID}.out
+    echo -e "${CHROM}\t${START}\t${END}\t${HAPESTRY_STRING}\t${KANPIG_STRING}" >> ${ID}.out
     i=$(( ${i} + 1 ))
     if [ $(( ${i} % ${QUANTUM} )) -eq 0 ]; then
         gcloud storage cp ${ID}.out ${REMOTE_OUTDIR}
