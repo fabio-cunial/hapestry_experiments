@@ -90,20 +90,6 @@ task Impl {
         
         # ----------------------- Steps of the pipeline ------------------------
         
-        cat << 'END' > timed_copy.sh
-#!/bin/bash
-set -euxo pipefail
-
-REMOTE_OUTDIR=$1
-
-while true; do
-    gcloud storage cp '*.out' ${REMOTE_OUTDIR}
-    sleep 15m
-done
-END
-        chmod +x timed_copy.sh
-        
-        
         cat << 'END' > vcfdist_on_chunk.sh
 #!/bin/bash
 set -euxo pipefail
@@ -112,9 +98,13 @@ HAPESTRY_VCF_GZ=$1
 KANPIG_VCF_GZ=$2
 TRUTH_VCF_GZ=$3
 EFFECTIVE_RAM_GB=$4
-ID=$5
+REMOTE_OUTDIR=$5
+ID=$6
+
+QUANTUM="50"  # Arbitrary
 
 rm -f ${ID}.out
+i="0"
 while read -u 3 ROW; do
     echo ${ROW} | tr ',' '\t' > ${ID}.bed
     CHROM=$(echo ${ROW} | cut -d , -f 1)
@@ -160,8 +150,11 @@ while read -u 3 ROW; do
     KANPIG_STRING=$(grep 'ALL' ${ID}_distance-summary.tsv | grep 'BEST')
     
     echo -e "${HAPESTRY_STRING}\t${KANPIG_STRING}" >> ${ID}.out
+    i=$(( ${i} + 1 ))
+    if [ $(( ${i} % ${QUANTUM} )) -eq 0 ]; then
+        gcloud storage cp ${ID}.out ${REMOTE_OUTDIR}
+    fi
     rm -f ${ID}_* ${ID}.bed
-    cat ${ID}.out
 done 3< chunk_${ID}
 END
         chmod +x vcfdist_on_chunk.sh
@@ -205,10 +198,7 @@ END
         split -d -a 2 -l ${N_COMPONENTS_PER_THREAD} superclusters.csv chunk_
         N_FILES=$(ls chunk_* | wc -l)
         ls chunk_* | sort -V | cut -c 7- > list.txt
-        ./timed_copy.sh ~{remote_outdir} &
-        PID=$!
-        ${TIME_COMMAND} xargs --arg-file=list.txt --max-lines=1 --max-procs=${N_THREADS} ./vcfdist_on_chunk.sh hapestry.vcf.gz kanpig.vcf.gz truth.vcf.gz ${EFFECTIVE_RAM_GB}
-        kill ${PID} || echo "1"
+        ${TIME_COMMAND} xargs --arg-file=list.txt --max-lines=1 --max-procs=${N_THREADS} ./vcfdist_on_chunk.sh hapestry.vcf.gz kanpig.vcf.gz truth.vcf.gz ${EFFECTIVE_RAM_GB} ~{remote_outdir}
         ls -laht 1>&2
         df -h 1>&2
         
