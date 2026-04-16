@@ -112,7 +112,6 @@ while read -u 3 ROW; do
         --distance \
         ~{vcfdist_extra_args} \
         --prefix ${ID}_
-    fi
     HAPESTRY_STRING=$(grep 'ALL' ${ID}_distance-summary.tsv | grep 'BEST')
     rm -f ${ID}_* 
     
@@ -128,13 +127,12 @@ while read -u 3 ROW; do
         --distance \
         ~{vcfdist_extra_args} \
         --prefix ${ID}_
-    fi
     KANPIG_STRING=$(grep 'ALL' ${ID}_distance-summary.tsv | grep 'BEST')
     rm -f ${ID}_* 
     
     echo -e "${HAPESTRY_STRING}\t${KANPIG_STRING}" >> ${ID}.out
     rm -f ${ID}.bed
-done 3< ${ID}.csv
+done 3< chunk_${ID}
 END
         chmod +x vcfdist_on_chunk.sh
         
