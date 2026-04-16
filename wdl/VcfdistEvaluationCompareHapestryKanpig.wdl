@@ -94,7 +94,8 @@ set -euxo pipefail
 HAPESTRY_VCF_GZ=$1
 KANPIG_VCF_GZ=$2
 TRUTH_VCF_GZ=$3
-ID=$4
+EFFECTIVE_RAM_GB=$4
+ID=$5
 
 rm -f ${ID}.out
 while read -u 3 ROW; do
@@ -173,7 +174,7 @@ END
         split -d -a 2 -l ${N_COMPONENTS_PER_THREAD} ~{supercluster_components_bed} chunk_
         N_FILES=$(ls chunk_* | wc -l)
         ls chunk_* | sort -V | cut -c 7- > list.txt
-        ${TIME_COMMAND} xargs --arg-file=list.txt --max-lines=1 --max-procs=${N_THREADS} ./vcfdist_on_chunk.sh hapestry.vcf.gz kanpig.vcf.gz truth.vcf.gz
+        ${TIME_COMMAND} xargs --arg-file=list.txt --max-lines=1 --max-procs=${N_THREADS} ./vcfdist_on_chunk.sh hapestry.vcf.gz kanpig.vcf.gz truth.vcf.gz ${EFFECTIVE_RAM_GB}
         ls -laht 1>&2
         df -h 1>&2
         
