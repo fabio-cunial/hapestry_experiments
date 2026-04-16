@@ -99,7 +99,7 @@ ID=$5
 
 rm -f ${ID}.out
 while read -u 3 ROW; do
-    echo -e ${ROW} > ${ID}.bed
+    echo ${ROW} | tr ',' '\t' > ${ID}.bed
     
     vcfdist ${HAPESTRY_VCF_GZ} ${TRUTH_VCF_GZ} reference.fa \
         --sv-threshold ~{min_sv_length} \
@@ -169,9 +169,11 @@ END
         fi
         
         # Evaluating every window in parallel
-        N_COMPONENTS=$(wc -l < ~{supercluster_components_bed})
+        tr '\t' ',' ~{supercluster_components_bed} > superclusters.csv
+        rm -f ~{supercluster_components_bed}
+        N_COMPONENTS=$(wc -l < superclusters.csv)
         N_COMPONENTS_PER_THREAD=$(( ${N_COMPONENTS} / ${N_THREADS} ))
-        split -d -a 2 -l ${N_COMPONENTS_PER_THREAD} ~{supercluster_components_bed} chunk_
+        split -d -a 2 -l ${N_COMPONENTS_PER_THREAD} superclusters.csv chunk_
         N_FILES=$(ls chunk_* | wc -l)
         ls chunk_* | sort -V | cut -c 7- > list.txt
         ${TIME_COMMAND} xargs --arg-file=list.txt --max-lines=1 --max-procs=${N_THREADS} ./vcfdist_on_chunk.sh hapestry.vcf.gz kanpig.vcf.gz truth.vcf.gz ${EFFECTIVE_RAM_GB}
