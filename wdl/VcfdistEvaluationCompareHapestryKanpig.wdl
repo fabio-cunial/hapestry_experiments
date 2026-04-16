@@ -100,8 +100,18 @@ ID=$5
 rm -f ${ID}.out
 while read -u 3 ROW; do
     echo ${ROW} | tr ',' '\t' > ${ID}.bed
+    CHROM=$(echo ${ROW} | cut -f 1)
+    START=$(echo ${ROW} | cut -f 2)
+    END=$(echo ${ROW} | cut -f 3)
     
-    vcfdist ${HAPESTRY_VCF_GZ} ${TRUTH_VCF_GZ} reference.fa \
+    # Truth
+    bcftools view --output-type z ${TRUTH_VCF_GZ} ${CHROM}:${START}-${END} --output ${ID}_truth.vcf.gz
+    bcftools index -f -t ${ID}_truth.vcf.gz
+    
+    # Hapestry
+    bcftools view --output-type z ${HAPESTRY_VCF_GZ} ${CHROM}:${START}-${END} --output ${ID}_query.vcf.gz
+    bcftools index -f -t ${ID}_query.vcf.gz
+    vcfdist ${ID}_query.vcf.gz ${ID}_truth.vcf.gz reference.fa \
         --sv-threshold ~{min_sv_length} \
         \
         --largest-variant 10000 \
@@ -116,7 +126,10 @@ while read -u 3 ROW; do
     HAPESTRY_STRING=$(grep 'ALL' ${ID}_distance-summary.tsv | grep 'BEST')
     rm -f ${ID}_* 
     
-    vcfdist ${KANPIG_VCF_GZ} ${TRUTH_VCF_GZ} reference.fa \
+    # Kanpig
+    bcftools view --output-type z ${KANPIG_VCF_GZ} ${CHROM}:${START}-${END} --output ${ID}_query.vcf.gz
+    bcftools index -f -t ${ID}_query.vcf.gz
+    vcfdist ${ID}_query.vcf.gz ${ID}_truth.vcf.gz reference.fa \
         --sv-threshold ~{min_sv_length} \
         \
         --largest-variant 10000 \
