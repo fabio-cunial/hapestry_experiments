@@ -171,7 +171,7 @@ END
         # Evaluating every window in parallel
         cat ~{supercluster_components_bed} | tr '\t' ',' > superclusters.csv
         rm -f ~{supercluster_components_bed}
-        N_COMPONENTS=$(wc -l < superclusters    .csv)
+        N_COMPONENTS=$(wc -l < superclusters.csv)
         N_COMPONENTS_PER_THREAD=$(( ${N_COMPONENTS} / ${N_THREADS} ))
         split -d -a 2 -l ${N_COMPONENTS_PER_THREAD} superclusters.csv chunk_
         N_FILES=$(ls chunk_* | wc -l)
