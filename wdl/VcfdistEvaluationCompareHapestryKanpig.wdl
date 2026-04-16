@@ -115,9 +115,9 @@ ID=$5
 rm -f ${ID}.out
 while read -u 3 ROW; do
     echo ${ROW} | tr ',' '\t' > ${ID}.bed
-    CHROM=$(echo ${ROW} | cut -f 1)
-    START=$(echo ${ROW} | cut -f 2)
-    END=$(echo ${ROW} | cut -f 3)
+    CHROM=$(echo ${ROW} | cut -d , -f 1)
+    START=$(echo ${ROW} | cut -d , -f 2)
+    END=$(echo ${ROW} | cut -d , -f 3)
     
     # Truth
     bcftools view --output-type z ${TRUTH_VCF_GZ} ${CHROM}:${START}-${END} --output ${ID}_truth.vcf.gz
