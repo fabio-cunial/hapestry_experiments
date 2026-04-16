@@ -6,6 +6,7 @@ workflow VcfdistEvaluationCompareHapestryKanpig {
     input {
         String sample_id
         String remote_input_dir
+        String remote_outdir
         String coverage_id
         File sample_dipcall_vcf_gz
         File sample_dipcall_tbi
@@ -28,6 +29,7 @@ workflow VcfdistEvaluationCompareHapestryKanpig {
         input:
             sample_id = sample_id,
             remote_input_dir = remote_input_dir,
+            remote_outdir = remote_outdir,
             coverage_id = coverage_id,
             sample_dipcall_vcf_gz = sample_dipcall_vcf_gz,
             sample_dipcall_tbi = sample_dipcall_tbi,
@@ -54,6 +56,7 @@ task Impl {
     input {
         String sample_id
         String remote_input_dir
+        String remote_outdir
         String coverage_id
         File sample_dipcall_vcf_gz
         File sample_dipcall_tbi
@@ -94,8 +97,7 @@ set -euxo pipefail
 REMOTE_OUTDIR=$1
 
 while true; do
-gcloud storage cp '*.out' ${REMOTE_OUTDIR}
-    
+    gcloud storage cp '*.out' ${REMOTE_OUTDIR}
     sleep 15m
 done
 END
@@ -139,7 +141,6 @@ while read -u 3 ROW; do
         ~{vcfdist_extra_args} \
         --prefix ${ID}_
     HAPESTRY_STRING=$(grep 'ALL' ${ID}_distance-summary.tsv | grep 'BEST')
-    rm -f ${ID}_* 
     
     # Kanpig
     bcftools view --output-type z ${KANPIG_VCF_GZ} ${CHROM}:${START}-${END} --output ${ID}_query.vcf.gz
@@ -157,10 +158,9 @@ while read -u 3 ROW; do
         ~{vcfdist_extra_args} \
         --prefix ${ID}_
     KANPIG_STRING=$(grep 'ALL' ${ID}_distance-summary.tsv | grep 'BEST')
-    rm -f ${ID}_* 
     
     echo -e "${HAPESTRY_STRING}\t${KANPIG_STRING}" >> ${ID}.out
-    rm -f ${ID}.bed
+    rm -f ${ID}_* ${ID}.bed
     cat ${ID}.out
 done 3< chunk_${ID}
 END
@@ -205,10 +205,10 @@ END
         split -d -a 2 -l ${N_COMPONENTS_PER_THREAD} superclusters.csv chunk_
         N_FILES=$(ls chunk_* | wc -l)
         ls chunk_* | sort -V | cut -c 7- > list.txt
-        timed_copy.sh &
+        ./timed_copy.sh ~{remote_outdir} &
         PID=$!
         ${TIME_COMMAND} xargs --arg-file=list.txt --max-lines=1 --max-procs=${N_THREADS} ./vcfdist_on_chunk.sh hapestry.vcf.gz kanpig.vcf.gz truth.vcf.gz ${EFFECTIVE_RAM_GB}
-        kill ${PID}
+        kill ${PID} || echo "1"
         ls -laht 1>&2
         df -h 1>&2
         
