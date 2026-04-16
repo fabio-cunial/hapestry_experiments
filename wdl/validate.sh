@@ -3,6 +3,7 @@
 set -x
 WOMTOOL_PATH="/Users/fcunial/apps/cromwell/womtool-84.jar"
 
+java -jar ${WOMTOOL_PATH} validate -l VcfdistEvaluationCompareHapestryKanpig.wdl
 java -jar ${WOMTOOL_PATH} validate -l TruvariEvaluation.wdl
 java -jar ${WOMTOOL_PATH} validate -l VcfdistEvaluationPrime.wdl
 java -jar ${WOMTOOL_PATH} validate -l SplitIntersampleVcf.wdl

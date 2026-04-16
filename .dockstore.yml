@@ -205,3 +205,8 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/TruvariEvaluation.wdl
+- name: VcfdistEvaluationCompareHapestryKanpig
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/VcfdistEvaluationCompareHapestryKanpig.wdl
+
