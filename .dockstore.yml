@@ -213,4 +213,9 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/Vcf2Haplotypes.wdl
+- name: AlignAssembly
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/AlignAssembly.wdl
+
 

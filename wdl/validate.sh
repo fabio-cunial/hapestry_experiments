@@ -3,6 +3,7 @@
 set -x
 WOMTOOL_PATH="/Users/fcunial/apps/cromwell/womtool-84.jar"
 
+java -jar ${WOMTOOL_PATH} validate -l AlignAssembly.wdl
 java -jar ${WOMTOOL_PATH} validate -l Vcf2Haplotypes.wdl
 java -jar ${WOMTOOL_PATH} validate -l VcfdistEvaluationCompareHapestryKanpig.wdl
 java -jar ${WOMTOOL_PATH} validate -l TruvariEvaluation.wdl
