@@ -209,7 +209,7 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/VcfdistEvaluationCompareHapestryKanpig.wdl
-- name: /wdl/Vcf2Haplotypes.wdl
+- name: Vcf2Haplotypes
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/Vcf2Haplotypes.wdl
