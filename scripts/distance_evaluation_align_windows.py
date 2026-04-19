@@ -9,6 +9,8 @@ assignment (bipartite matching of sequences).
 
 Usage:
     python align_windows_pywfa.py <reference_dir> <query_dir> <output_csv>
+
+This script was mostly written by Copilot with auto model.
 """
 
 import argparse

@@ -31,6 +31,10 @@ workflow Vcf2Haplotypes {
 }
 
 
+# Performance on a 
+#
+# TOOL                  CPU     RAM     TIME
+# bcftools consensus    30%     15M     1m
 #
 task Impl {
     input {
@@ -42,7 +46,7 @@ task Impl {
         File reference_fa
         File reference_fai
 
-        Int ram_gb = 8
+        Int ram_gb = 2
     }
     parameter_meta {
     }
@@ -72,7 +76,7 @@ task Impl {
     }
     runtime {
         docker: "fcunial/hapestry_experiments"
-        cpu: 2
+        cpu: 1
         memory: ram_gb + "GB"
         disks: "local-disk 50 HDD"
         preemptible: 0

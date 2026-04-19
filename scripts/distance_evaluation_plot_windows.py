@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""
+This script was mostly written by Copilot with auto model.
+"""
 
 import numpy as np
 import matplotlib.pyplot as plt
