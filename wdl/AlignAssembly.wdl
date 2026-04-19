@@ -33,6 +33,12 @@ workflow AlignAssembly {
 }
 
 
+# Performance on a VM with 16 cores and 64 GB of RAM (chr1 only):
+#
+# TOOL                  CPU%     RAM      TIME
+# minimap2              300%     14G      40m
+# samtools sort         800%     18G      1m  
+# samtools index        850%     400M     4s
 #
 task Impl {
     input {
@@ -43,8 +49,8 @@ task Impl {
         File reference_fa
         File reference_fai
 
-        Int ram_gb = 64
-        Int n_cpu = 16
+        Int ram_gb = 16
+        Int n_cpu = 8
         Int disk_size_gb = 50
     }
     parameter_meta {
