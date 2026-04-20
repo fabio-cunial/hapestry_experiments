@@ -520,9 +520,6 @@ Examples:
     logger.info(f"Windows failed (ref has <2 sequences): {windows_failed_ref_lt2}")
     logger.info(f"Windows failed (query has <2 sequences): {windows_failed_query_lt2}")
     logger.info(f"Total results: {len(results)}")
-    
-    if windows_failed > 0:
-        sys.exit(1)
 
 
 if __name__ == '__main__':

@@ -59,7 +59,7 @@ workflow DistanceEvaluation {
 #
 # TOOL                                      CPU%     RAM      TIME
 # extract_reads_from_windows                200%     1GB      1m
-# distance_evaluation_align_windows.py
+# distance_evaluation_align_windows.py      100%     6GB      6m
 # sort
 # join
 #
