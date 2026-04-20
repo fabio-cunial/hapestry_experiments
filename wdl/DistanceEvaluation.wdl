@@ -30,9 +30,9 @@ workflow DistanceEvaluation {
     }
     
     output {
-        File windows_hapestry = Impl.windows_hapestry
-        File windows_kanpig = Impl.windows_kanpig
-        File join_csv = Impl.join_csv
+        File alignment_distances_hapestry = Impl.alignment_distances_hapestry
+        File alignment_distances_kanpig = Impl.alignment_distances_kanpig
+        File alignment_distances_hapestry_kanpig_csv = Impl.alignment_distances_hapestry_kanpig_csv
     }
 }
 
