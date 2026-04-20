@@ -29,6 +29,14 @@ except ImportError:
     sys.exit(1)
 
 
+class ReferenceSequenceCountError(ValueError):
+    """Raised when the reference FASTA has fewer than two sequences."""
+
+
+class QuerySequenceCountError(ValueError):
+    """Raised when the query FASTA has fewer than two sequences."""
+
+
 def setup_logging(level=logging.INFO):
     """Configure logging."""
     logging.basicConfig(
@@ -321,14 +329,18 @@ def process_window(window_name: str, ref_window_dir: str, query_window_dir: str)
             "  Reference FASTA has >2 sequences; selected a longest hap 1 and a longest hap2 sequence"
         )
     elif len(ref_sequences) < 2:
-        raise ValueError(f"Expected exactly 2 sequences in {ref_fasta}, found {len(ref_sequences)}")
+        raise ReferenceSequenceCountError(
+            f"Expected exactly 2 sequences in {ref_fasta}, found {len(ref_sequences)}"
+        )
     if len(query_sequences) > 2:
         query_sequences = select_longest_by_haplotype(query_sequences, query_fasta)
         logging.info(
             "  Query FASTA has >2 sequences; selected a longest hap 1 and a longest hap2 sequence"
         )    
     elif len(query_sequences) < 2:
-        raise ValueError(f"Expected exactly 2 sequences in {query_fasta}, found {len(query_sequences)}")
+        raise QuerySequenceCountError(
+            f"Expected exactly 2 sequences in {query_fasta}, found {len(query_sequences)}"
+        )
     
     # Extract sequence strings
     ref_seqs = [seq for _, seq in ref_sequences]
@@ -446,6 +458,9 @@ Examples:
     results = []
     windows_processed = 0
     windows_failed = 0
+    windows_failed_not_found = 0
+    windows_failed_ref_lt2 = 0
+    windows_failed_query_lt2 = 0
     
     for window_name in ref_windows:
         ref_window_path = ref_dir / window_name
@@ -454,6 +469,7 @@ Examples:
         if not query_window_path.exists():
             logger.warning(f"Corresponding query window not found: {window_name}")
             windows_failed += 1
+            windows_failed_not_found += 1
             continue
         
         try:
@@ -464,6 +480,16 @@ Examples:
             )
             results.append((window_name_result, window_length, score))
             windows_processed += 1
+        except ReferenceSequenceCountError as e:
+            logger.warning(f"Skipping window {window_name}: {e}")
+            windows_failed += 1
+            windows_failed_ref_lt2 += 1
+            continue
+        except QuerySequenceCountError as e:
+            logger.warning(f"Skipping window {window_name}: {e}")
+            windows_failed += 1
+            windows_failed_query_lt2 += 1
+            continue
         except Exception as e:
             logger.error(f"Error processing window {window_name}: {e}")
             windows_failed += 1
@@ -489,7 +515,10 @@ Examples:
     if confident_regions:
         logger.info(f"Windows rejected (not in confident region): {windows_rejected}")
     logger.info(f"Windows processed: {windows_processed}")
-    logger.info(f"Windows failed: {windows_failed}")
+    logger.info(f"Windows failed (total): {windows_failed}")
+    logger.info(f"Windows failed (ref window not found in query): {windows_failed_not_found}")
+    logger.info(f"Windows failed (ref has <2 sequences): {windows_failed_ref_lt2}")
+    logger.info(f"Windows failed (query has <2 sequences): {windows_failed_query_lt2}")
     logger.info(f"Total results: {len(results)}")
     
     if windows_failed > 0:

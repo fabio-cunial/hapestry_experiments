@@ -83,23 +83,23 @@ task Impl {
         ${TIME_COMMAND} /hapestry/sv_merge/build/extract_reads_from_windows --n_threads ${N_THREADS} --bam_csv ~{kanpig_bam_csv}   --output_dir ./windows_kanpig/   --windows ~{flanked_windows_bed} --flank_length 0 --fetch_max_length ${FETCH_MAX_LENGTH} --require_spanning
         
         # Aligning windows
-        ${TIME_COMMAND} python distance_evaluation_align_windows.py ./windows_assembly/ ./windows_hapestry/ ./windows_hapestry.csv --confident-bed ~{confident_bed}
-        ${TIME_COMMAND} python distance_evaluation_align_windows.py ./windows_assembly/ ./windows_kanpig/   ./windows_kanpig.csv   --confident-bed ~{confident_bed}
-        ${TIME_COMMAND} sort -t , -k 1,1 windows_hapestry.csv > windows_hapestry_sorted.csv
-        ${TIME_COMMAND} sort -t , -k 1,1 windows_kanpig.csv > windows_kanpig_sorted.csv
-        ${TIME_COMMAND} join -t ',' -1 1 -2 1 windows_hapestry_sorted.csv windows_kanpig_sorted.csv > join.csv
+        ${TIME_COMMAND} python distance_evaluation_align_windows.py ./windows_assembly/ ./windows_hapestry/ ./alignment_distances_hapestry.csv --confident-bed ~{confident_bed}
+        ${TIME_COMMAND} python distance_evaluation_align_windows.py ./windows_assembly/ ./windows_kanpig/   ./alignment_distances_kanpig.csv   --confident-bed ~{confident_bed}
+        ${TIME_COMMAND} sort -t , -k 1,1 alignment_distances_hapestry.csv > alignment_distances_hapestry_sorted.csv
+        ${TIME_COMMAND} sort -t , -k 1,1 alignment_distances_kanpig.csv > alignment_distances_kanpig_sorted.csv
+        ${TIME_COMMAND} join -t ',' -1 1 -2 1 alignment_distances_hapestry_sorted.csv alignment_distances_kanpig_sorted.csv > join.csv
         ls -laht
         
         # Outputting
-        mv join.csv ~{min_sv_length}bp_~{coverage}_~{sample_id}_join.csv
-        mv windows_hapestry_sorted.csv ~{min_sv_length}bp_~{coverage}_~{sample_id}_windows_hapestry.csv
-        mv windows_kanpig_sorted.csv ~{min_sv_length}bp_~{coverage}_~{sample_id}_windows_kanpig.csv
+        mv join.csv ~{min_sv_length}bp_~{coverage}_~{sample_id}_alignment_distances_hapestry_kanpig.csv
+        mv alignment_distances_hapestry_sorted.csv ~{min_sv_length}bp_~{coverage}_~{sample_id}_alignment_distances_hapestry.csv
+        mv alignment_distances_kanpig_sorted.csv ~{min_sv_length}bp_~{coverage}_~{sample_id}_alignment_distances_kanpig.csv
     >>>
     
     output {
-        File windows_hapestry = min_sv_length + "bp_" + coverage + "_" + sample_id + "_windows_hapestry.csv"
-        File windows_kanpig = min_sv_length + "bp_" + coverage + "_" + sample_id + "_windows_kanpig.csv"
-        File join_csv = min_sv_length + "bp_" + coverage + "_" + sample_id + "_join.csv"
+        File alignment_distances_hapestry = min_sv_length + "bp_" + coverage + "_" + sample_id + "_alignment_distances_hapestry.csv"
+        File alignment_distances_kanpig = min_sv_length + "bp_" + coverage + "_" + sample_id + "_alignment_distances_kanpig.csv"
+        File alignment_distances_hapestry_kanpig_csv = min_sv_length + "bp_" + coverage + "_" + sample_id + "_alignment_distances_hapestry_kanpig.csv"
     }
     runtime {
         docker: "fcunial/hapestry_distance_evaluation"
