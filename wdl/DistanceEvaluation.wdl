@@ -113,8 +113,8 @@ task Impl {
         ${TIME_COMMAND} /hapestry/sv_merge/build/extract_reads_from_windows --n_threads ${N_THREADS} --bam_csv kanpig.csv   --output_dir ./windows_kanpig/   --windows ~{flanked_windows_bed} --flank_length 0 --fetch_max_length ${FETCH_MAX_LENGTH} --require_spanning --force_unique_reads
         
         # Aligning windows
-        ${TIME_COMMAND} python distance_evaluation_align_windows.py ./windows_assembly/ ./windows_hapestry/ ./alignment_distances_hapestry.csv --confident-bed ~{confident_bed}
-        ${TIME_COMMAND} python distance_evaluation_align_windows.py ./windows_assembly/ ./windows_kanpig/   ./alignment_distances_kanpig.csv   --confident-bed ~{confident_bed}
+        ${TIME_COMMAND} python /hapestry/sv_merge/build/distance_evaluation_align_windows.py ./windows_assembly/ ./windows_hapestry/ ./alignment_distances_hapestry.csv --confident-bed ~{confident_bed}
+        ${TIME_COMMAND} python /hapestry/sv_merge/build/distance_evaluation_align_windows.py ./windows_assembly/ ./windows_kanpig/   ./alignment_distances_kanpig.csv   --confident-bed ~{confident_bed}
         ${TIME_COMMAND} sort -t , -k 1,1 alignment_distances_hapestry.csv > alignment_distances_hapestry_sorted.csv
         ${TIME_COMMAND} sort -t , -k 1,1 alignment_distances_kanpig.csv > alignment_distances_kanpig_sorted.csv
         ${TIME_COMMAND} join -t ',' -1 1 -2 1 alignment_distances_hapestry_sorted.csv alignment_distances_kanpig_sorted.csv > join.csv
