@@ -58,7 +58,7 @@ workflow DistanceEvaluation {
 # Performance on a VM with 8 cores and 16 GB of RAM (chr1 only):
 #
 # TOOL                                      CPU%     RAM      TIME
-# extract_reads_from_windows
+# extract_reads_from_windows                200%     1GB      1m
 # distance_evaluation_align_windows.py
 # sort
 # join
@@ -108,9 +108,9 @@ task Impl {
         echo "~{sample_id}_2,~{hapestry_hap2_bam}" >> hapestry.csv
         echo "~{sample_id}_1,~{kanpig_hap1_bam}" > kanpig.csv
         echo "~{sample_id}_2,~{kanpig_hap2_bam}" >> kanpig.csv
-        ${TIME_COMMAND} /hapestry/sv_merge/build/extract_reads_from_windows --n_threads ${N_THREADS} --bam_csv ~{assembly_bam_csv} --output_dir ./windows_assembly/ --windows ~{flanked_windows_bed} --flank_length 0 --fetch_max_length ${FETCH_MAX_LENGTH} --require_spanning
-        ${TIME_COMMAND} /hapestry/sv_merge/build/extract_reads_from_windows --n_threads ${N_THREADS} --bam_csv hapestry.csv --output_dir ./windows_hapestry/ --windows ~{flanked_windows_bed} --flank_length 0 --fetch_max_length ${FETCH_MAX_LENGTH} --require_spanning
-        ${TIME_COMMAND} /hapestry/sv_merge/build/extract_reads_from_windows --n_threads ${N_THREADS} --bam_csv kanpig.csv   --output_dir ./windows_kanpig/   --windows ~{flanked_windows_bed} --flank_length 0 --fetch_max_length ${FETCH_MAX_LENGTH} --require_spanning
+        ${TIME_COMMAND} /hapestry/sv_merge/build/extract_reads_from_windows --n_threads ${N_THREADS} --bam_csv ~{assembly_bam_csv} --output_dir ./windows_assembly/ --windows ~{flanked_windows_bed} --flank_length 0 --fetch_max_length ${FETCH_MAX_LENGTH} --require_spanning --force_unique_reads
+        ${TIME_COMMAND} /hapestry/sv_merge/build/extract_reads_from_windows --n_threads ${N_THREADS} --bam_csv hapestry.csv --output_dir ./windows_hapestry/ --windows ~{flanked_windows_bed} --flank_length 0 --fetch_max_length ${FETCH_MAX_LENGTH} --require_spanning --force_unique_reads
+        ${TIME_COMMAND} /hapestry/sv_merge/build/extract_reads_from_windows --n_threads ${N_THREADS} --bam_csv kanpig.csv   --output_dir ./windows_kanpig/   --windows ~{flanked_windows_bed} --flank_length 0 --fetch_max_length ${FETCH_MAX_LENGTH} --require_spanning --force_unique_reads
         
         # Aligning windows
         ${TIME_COMMAND} python distance_evaluation_align_windows.py ./windows_assembly/ ./windows_hapestry/ ./alignment_distances_hapestry.csv --confident-bed ~{confident_bed}
