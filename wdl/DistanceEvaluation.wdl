@@ -11,8 +11,16 @@ workflow DistanceEvaluation {
         File confident_bed
         
         File assembly_bam_csv
-        File hapestry_bam_csv
-        File kanpig_bam_csv
+        
+        File hapestry_hap1_bam
+        File hapestry_hap1_bai
+        File hapestry_hap2_bam
+        File hapestry_hap2_bai
+        
+        File kanpig_hap1_bam
+        File kanpig_hap1_bai
+        File kanpig_hap2_bam
+        File kanpig_hap2_bai
     }
     parameter_meta {
     }
@@ -22,11 +30,21 @@ workflow DistanceEvaluation {
             min_sv_length = min_sv_length,
             coverage = coverage,
             sample_id = sample_id,
+            
             flanked_windows_bed = flanked_windows_bed,
             confident_bed = confident_bed,
+            
             assembly_bam_csv = assembly_bam_csv,
-            hapestry_bam_csv = hapestry_bam_csv,
-            kanpig_bam_csv = kanpig_bam_csv
+            
+            hapestry_hap1_bam = hapestry_hap1_bam,
+            hapestry_hap1_bai = hapestry_hap1_bai,
+            hapestry_hap2_bam = hapestry_hap2_bam,
+            hapestry_hap2_bai = hapestry_hap2_bai,
+            
+            kanpig_hap1_bam = kanpig_hap1_bam,
+            kanpig_hap1_bai = kanpig_hap1_bai,
+            kanpig_hap2_bam = kanpig_hap2_bam,
+            kanpig_hap2_bai = kanpig_hap2_bai
     }
     
     output {
@@ -55,8 +73,16 @@ task Impl {
         File confident_bed
         
         File assembly_bam_csv
-        File hapestry_bam_csv
-        File kanpig_bam_csv
+        
+        File hapestry_hap1_bam
+        File hapestry_hap1_bai
+        File hapestry_hap2_bam
+        File hapestry_hap2_bai
+        
+        File kanpig_hap1_bam
+        File kanpig_hap1_bai
+        File kanpig_hap2_bam
+        File kanpig_hap2_bai
         
         Int ram_gb = 16
         Int n_cpu = 8
@@ -78,9 +104,13 @@ task Impl {
         FETCH_MAX_LENGTH="100000"  # Arbitrary
         
         # Downloading windows
+        echo "~{sample_id}_1,~{hapestry_hap1_bam}" > hapestry.csv
+        echo "~{sample_id}_2,~{hapestry_hap2_bam}" >> hapestry.csv
+        echo "~{sample_id}_1,~{kanpig_hap1_bam}" > kanpig.csv
+        echo "~{sample_id}_2,~{kanpig_hap2_bam}" >> kanpig.csv
         ${TIME_COMMAND} /hapestry/sv_merge/build/extract_reads_from_windows --n_threads ${N_THREADS} --bam_csv ~{assembly_bam_csv} --output_dir ./windows_assembly/ --windows ~{flanked_windows_bed} --flank_length 0 --fetch_max_length ${FETCH_MAX_LENGTH} --require_spanning
-        ${TIME_COMMAND} /hapestry/sv_merge/build/extract_reads_from_windows --n_threads ${N_THREADS} --bam_csv ~{hapestry_bam_csv} --output_dir ./windows_hapestry/ --windows ~{flanked_windows_bed} --flank_length 0 --fetch_max_length ${FETCH_MAX_LENGTH} --require_spanning
-        ${TIME_COMMAND} /hapestry/sv_merge/build/extract_reads_from_windows --n_threads ${N_THREADS} --bam_csv ~{kanpig_bam_csv}   --output_dir ./windows_kanpig/   --windows ~{flanked_windows_bed} --flank_length 0 --fetch_max_length ${FETCH_MAX_LENGTH} --require_spanning
+        ${TIME_COMMAND} /hapestry/sv_merge/build/extract_reads_from_windows --n_threads ${N_THREADS} --bam_csv hapestry.csv --output_dir ./windows_hapestry/ --windows ~{flanked_windows_bed} --flank_length 0 --fetch_max_length ${FETCH_MAX_LENGTH} --require_spanning
+        ${TIME_COMMAND} /hapestry/sv_merge/build/extract_reads_from_windows --n_threads ${N_THREADS} --bam_csv kanpig.csv   --output_dir ./windows_kanpig/   --windows ~{flanked_windows_bed} --flank_length 0 --fetch_max_length ${FETCH_MAX_LENGTH} --require_spanning
         
         # Aligning windows
         ${TIME_COMMAND} python distance_evaluation_align_windows.py ./windows_assembly/ ./windows_hapestry/ ./alignment_distances_hapestry.csv --confident-bed ~{confident_bed}
