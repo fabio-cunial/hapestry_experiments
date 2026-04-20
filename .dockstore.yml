@@ -217,5 +217,11 @@ workflows:
   subclass: wdl
   publish: True
   primaryDescriptorPath: /wdl/AlignAssembly.wdl
+- name: DistanceEvaluation
+  subclass: wdl
+  publish: True
+  primaryDescriptorPath: /wdl/DistanceEvaluation.wdl
+
+
 
 
