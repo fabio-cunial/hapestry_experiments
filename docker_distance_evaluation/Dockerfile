@@ -128,6 +128,7 @@ RUN make -j 16
 
 # ----------------------------- CUSTOM SCRIPTS ---------------------------------
 RUN pip3 install pywfa
+WORKDIR /hapestry/
 COPY *.java .
 RUN javac *.java
 COPY *.py .
