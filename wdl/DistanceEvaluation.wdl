@@ -84,6 +84,7 @@ task Impl {
         File kanpig_hap2_bam
         File kanpig_hap2_bai
         
+        String docker_image = "fcunial/hapestry_distance_evaluation:latest"
         Int ram_gb = 16
         Int n_cpu = 8
         Int disk_size_gb = 50
@@ -132,7 +133,7 @@ task Impl {
         File alignment_distances_hapestry_kanpig_csv = min_sv_length + "bp_" + coverage + "_" + sample_id + "_alignment_distances_hapestry_kanpig.csv"
     }
     runtime {
-        docker: "fcunial/hapestry_distance_evaluation"
+        docker: docker_image
         cpu: n_cpu
         memory: ram_gb + "GB"
         disks: "local-disk " + disk_size_gb + " HDD"
