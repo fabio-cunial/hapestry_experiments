@@ -5,6 +5,7 @@ This script was mostly written by Copilot with auto model.
 
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 
 
 def load_matrix(path: str, delimiter: str = ',') -> np.ndarray:
@@ -56,6 +57,12 @@ def log_bucket_medians(
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Plot distance-evaluation summaries from a CSV file.")
+    parser.add_argument("input_csv", help="Path to input CSV (columns: length, w_H, w_TK)")
+    args = parser.parse_args()
+
+    a = load_matrix(args.input_csv, delimiter=',')
+
     fig, axes = plt.subplots(1, 4, figsize=(24, 5))
     grid_color = "0.8"
     right_grid_color = "0.9"
@@ -64,7 +71,6 @@ def main() -> None:
     ax_left.set_aspect("equal", adjustable="box")
     ax_left.grid(True, color=grid_color, linewidth=0.8)
 
-    a = load_matrix("join_cleaned.csv")
     count_h = np.sum(a[:, 1] < a[:, 2])
     count_k = np.sum(a[:, 2] < a[:, 1])
     total = a.shape[0]
@@ -72,14 +78,13 @@ def main() -> None:
     percent_k = 100.0 * count_k / total
     ax_left.plot(percent_h, percent_k, "ob", markerfacecolor='none', markersize=12, label=r"$\geq$50bp, 32x")
     ax_left.plot([0, 100], [0, 100], color=grid_color)
-    ax_left.set_xlabel(r"% windows with $d_H < d_K$")
-    ax_left.set_ylabel(r"% windows with $d_K < d_H$")
+    ax_left.set_xlabel(r"% windows with $w_H < w_{TK}$")
+    ax_left.set_ylabel(r"% windows with $w_K < w_{TK}$")
     ax_left.set_title("% windows in each sample")
     ax_left.legend(loc="upper left")
 
     # Right panel: 2D heatmap of point density using rows of A as (x, y).
     ax_right = axes[1]
-    a = load_matrix("join_cleaned.csv", delimiter=',')
     x = a[:, 1]
     y = a[:, 2]
     N_BINS = 100
@@ -100,13 +105,12 @@ def main() -> None:
     ax_right.set_aspect("equal", adjustable="box")
     ax_right.set_axisbelow(True)
     ax_right.grid(True, which="both", color=right_grid_color, linewidth=0.8)
-    ax_right.set_xlabel("$d_H$")
-    ax_right.set_ylabel("$d_K$")
+    ax_right.set_xlabel("$w_H$")
+    ax_right.set_ylabel("$w_{TK}$")
     ax_right.set_title(r"Pair edit distance of every window in HG002 ($\geq$50bp, 32x)")
 
     # Third panel: per-row difference (kanpig score - hapestry score).
     ax_third = axes[2]
-    a = load_matrix("join_cleaned.csv", delimiter=',')
     diff = a[:, 2] - a[:, 1]
     rng = np.random.default_rng(0)
     jitter = rng.uniform(-0.15, 0.15, size=len(diff))
@@ -120,27 +124,26 @@ def main() -> None:
     ax_third.axhline(0, color=grid_color, linewidth=1)
     ax_third.set_xticks([0])
     ax_third.set_xticklabels([r"$\geq$50bp, 32x"])
-    ax_third.set_ylabel(r"$d_K - d_H$")
+    ax_third.set_ylabel(r"$w_{TK} - w_H$")
     ax_third.set_title("Pair edit distance difference of every window in HG002")
     ax_third.grid(True, axis='y', color=right_grid_color, linewidth=0.8)
 
-    # Fourth panel: median d_H and d_K after log-bucketing by window length (column 0).
+    # Fourth panel: median w_H and w_TK after log-bucketing by window length (column 0).
     ax_fourth = axes[3]
-    a = load_matrix("join_cleaned.csv", delimiter=',')
     lengths = a[:, 0]
-    centers, med_h, med_k = log_bucket_medians(lengths, a[:, 1], a[:, 2], n_bins=12)
+    centers, med_h, med_tk = log_bucket_medians(lengths, a[:, 1], a[:, 2], n_bins=12)
 
-    for x_i, y_k, y_h in zip(centers, med_k, med_h):
+    for x_i, y_tk, y_h in zip(centers, med_tk, med_h):
         ax_fourth.annotate(
             "",
             xy=(x_i, y_h),
-            xytext=(x_i, y_k),
+            xytext=(x_i, y_tk),
             arrowprops=dict(arrowstyle="->", color="0.35", linewidth=1.0, alpha=0.9),
             zorder=2,
         )
 
-    ax_fourth.plot(centers, med_h, "o", color="#1b9e77", markersize=4, label=r"median($d_H$)")
-    ax_fourth.plot(centers, med_k, "o", color="#d95f02", markersize=4, label=r"median($d_K$)")
+    ax_fourth.plot(centers, med_h, "o", color="#1b9e77", markersize=4, label=r"median($w_H$)")
+    ax_fourth.plot(centers, med_tk, "o", color="#d95f02", markersize=4, label=r"median($w_{TK}$)")
     ax_fourth.set_xscale("log")
     ax_fourth.set_xlabel("Window length bin (bp)")
     ax_fourth.set_ylabel("Pair edit distance")

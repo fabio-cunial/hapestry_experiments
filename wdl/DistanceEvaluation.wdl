@@ -59,9 +59,9 @@ workflow DistanceEvaluation {
 #
 # TOOL                                      CPU%     RAM      TIME
 # extract_reads_from_windows                200%     1GB      1m
-# distance_evaluation_align_windows.py      100%     6GB      6m
-# sort
-# join
+# distance_evaluation_align_windows.py      100%     6GB      7m
+# sort                                      100%     3MB      1s
+# join                                      100%     2MB      1s
 #
 task Impl {
     input {
@@ -85,8 +85,8 @@ task Impl {
         File kanpig_hap2_bai
         
         String docker_image = "fcunial/hapestry_distance_evaluation:latest"
-        Int ram_gb = 16
-        Int n_cpu = 8
+        Int ram_gb = 8
+        Int n_cpu = 2
         Int disk_size_gb = 50
     }
     parameter_meta {
