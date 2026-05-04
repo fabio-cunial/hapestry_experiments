@@ -141,11 +141,12 @@ def main() -> None:
     if input_path.is_dir():
         all_cohort_data = load_all_cohort_csvs(input_path)
 
-    # First plot: all samples.
-    fig, axes = plt.subplots(1, 4, figsize=(24, 5))
-    grid_color = "0.8"
+    fig, axes = plt.subplots(1, 2, figsize=(24, 5))
+    grid_color = "0.9"
     right_grid_color = "0.9"
-    ax_left = axes[0]
+
+    # First plot: all samples.
+    ax_left = axes[1]
     ax_left.set_aspect("equal", adjustable="box")
     ax_left.grid(True, color=grid_color, linewidth=0.8)
     if left_panel_points is None:
@@ -179,7 +180,7 @@ def main() -> None:
     ax_left.legend(loc="upper left")
 
     # Second plot: 2D heatmap of point density using rows of A as (x, y).
-    ax_right = axes[1]
+    ax_right = axes[0]
     x = a[:, 1]
     y = a[:, 3]
     N_BINS = 100
@@ -204,82 +205,83 @@ def main() -> None:
     ax_right.set_ylabel("$w_{TK}$")
     ax_right.set_title(rf"Matching weight per window in {detail_sample_id} ($\geq$50bp, 32x)")
 
-    # Third panel: per-row difference (kanpig score - hapestry score).
-    ax_third = axes[2]
-    if all_cohort_data:
-        cohort_order = [(10, 8), (10, 32), (50, 8), (50, 32)]
-        cohort_labels = ["10bp 8x", "10bp 32x", "50bp 8x", "50bp 32x"]
-        all_diffs = []
+    # # Third panel: per-row difference (kanpig score - hapestry score).
+    # ax_third = axes[2]
+    # if all_cohort_data:
+    #     cohort_order = [(10, 8), (10, 32), (50, 8), (50, 32)]
+    #     cohort_labels = ["10bp 8x", "10bp 32x", "50bp 8x", "50bp 32x"]
+    #     all_diffs = []
         
-        for min_bp, coverage in cohort_order:
-            if (min_bp, coverage) in all_cohort_data:
-                cohort_a = all_cohort_data[(min_bp, coverage)]
-                diff = cohort_a[:, 3] - cohort_a[:, 1]
-                all_diffs.append(diff)
-            else:
-                all_diffs.append(np.array([]))
+    #     for min_bp, coverage in cohort_order:
+    #         if (min_bp, coverage) in all_cohort_data:
+    #             cohort_a = all_cohort_data[(min_bp, coverage)]
+    #             diff = cohort_a[:, 3] - cohort_a[:, 1]
+    #             all_diffs.append(diff)
+    #         else:
+    #             all_diffs.append(np.array([]))
         
-        rng = np.random.default_rng(0)
-        for i, diff in enumerate(all_diffs):
-            if len(diff) > 0:
-                jitter = rng.uniform(-0.15, 0.15, size=len(diff))
-                ax_third.scatter(i + jitter, diff, s=8, color='#4878D0', alpha=0.5, linewidths=0, zorder=2)
+    #     rng = np.random.default_rng(0)
+    #     for i, diff in enumerate(all_diffs):
+    #         if len(diff) > 0:
+    #             jitter = rng.uniform(-0.15, 0.15, size=len(diff))
+    #             ax_third.scatter(i + jitter, diff, s=8, color='#4878D0', alpha=0.5, linewidths=0, zorder=2)
         
-        ax_third.boxplot(all_diffs, positions=range(len(cohort_order)), widths=0.4, showfliers=False,
-                         medianprops=dict(color='black', linewidth=1.5),
-                         boxprops=dict(linewidth=1.2),
-                         whiskerprops=dict(linewidth=1.2),
-                         capprops=dict(linewidth=1.2),
-                         zorder=3)
-        ax_third.axhline(0, color=grid_color, linewidth=1)
-        ax_third.set_xticks(range(len(cohort_order)))
-        ax_third.set_xticklabels(cohort_labels)
-        ax_third.set_ylabel(r"$w_{TK} - w_H$")
-        ax_third.set_title(rf"Matching weight difference per window in {detail_sample_id} ($\geq$50bp, 32x)")
-    else:
-        diff = a[:, 3] - a[:, 1]
-        rng = np.random.default_rng(0)
-        jitter = rng.uniform(-0.15, 0.15, size=len(diff))
-        ax_third.scatter(jitter, diff, s=8, color='#4878D0', alpha=0.5, linewidths=0, zorder=2)
-        ax_third.boxplot(diff, positions=[0], widths=0.3, showfliers=False,
-                         medianprops=dict(color='black', linewidth=1.5),
-                         boxprops=dict(linewidth=1.2),
-                         whiskerprops=dict(linewidth=1.2),
-                         capprops=dict(linewidth=1.2),
-                         zorder=3)
-        ax_third.axhline(0, color=grid_color, linewidth=1)
-        ax_third.set_xticks([0])
-        ax_third.set_xticklabels([rf"$\geq$50bp, 32x"])
-        ax_third.set_ylabel(r"$w_{TK} - w_H$")
-        ax_third.set_title(rf"Match weight difference per window in {detail_sample_id} ($\geq$50bp, 32x)")
+    #     ax_third.boxplot(all_diffs, positions=range(len(cohort_order)), widths=0.4, showfliers=False,
+    #                      medianprops=dict(color='black', linewidth=1.5),
+    #                      boxprops=dict(linewidth=1.2),
+    #                      whiskerprops=dict(linewidth=1.2),
+    #                      capprops=dict(linewidth=1.2),
+    #                      zorder=3)
+    #     ax_third.axhline(0, color=grid_color, linewidth=1)
+    #     ax_third.set_xticks(range(len(cohort_order)))
+    #     ax_third.set_xticklabels(cohort_labels)
+    #     ax_third.set_ylabel(r"$w_{TK} - w_H$")
+    #     ax_third.set_title(rf"Matching weight difference per window in {detail_sample_id} ($\geq$50bp, 32x)")
+    # else:
+    #     diff = a[:, 3] - a[:, 1]
+    #     rng = np.random.default_rng(0)
+    #     jitter = rng.uniform(-0.15, 0.15, size=len(diff))
+    #     ax_third.scatter(jitter, diff, s=8, color='#4878D0', alpha=0.5, linewidths=0, zorder=2)
+    #     ax_third.boxplot(diff, positions=[0], widths=0.3, showfliers=False,
+    #                      medianprops=dict(color='black', linewidth=1.5),
+    #                      boxprops=dict(linewidth=1.2),
+    #                      whiskerprops=dict(linewidth=1.2),
+    #                      capprops=dict(linewidth=1.2),
+    #                      zorder=3)
+    #     ax_third.axhline(0, color=grid_color, linewidth=1)
+    #     ax_third.set_xticks([0])
+    #     ax_third.set_xticklabels([rf"$\geq$50bp, 32x"])
+    #     ax_third.set_ylabel(r"$w_{TK} - w_H$")
+    #     ax_third.set_title(rf"Match weight difference per window in {detail_sample_id} ($\geq$50bp, 32x)")
     
-    ax_third.grid(True, axis='y', color=right_grid_color, linewidth=0.8)
+    # ax_third.grid(True, axis='y', color=right_grid_color, linewidth=0.8)
     
 
-    # Fourth panel: median w_H and w_TK after log-bucketing by window length (column 0).
-    ax_fourth = axes[3]
-    lengths = a[:, 0]
-    centers, med_h, med_tk = log_bucket_medians(lengths, a[:, 1], a[:, 3], n_bins=12)
+    # # Fourth panel: median w_H and w_TK after log-bucketing by window length (column 0).
+    # ax_fourth = axes[3]
+    # lengths = a[:, 0]
+    # centers, med_h, med_tk = log_bucket_medians(lengths, a[:, 1], a[:, 3], n_bins=12)
 
-    for x_i, y_tk, y_h in zip(centers, med_tk, med_h):
-        ax_fourth.annotate(
-            "",
-            xy=(x_i, y_h),
-            xytext=(x_i, y_tk),
-            arrowprops=dict(arrowstyle="->", color="0.35", linewidth=1.0, alpha=0.9),
-            zorder=2,
-        )
+    # for x_i, y_tk, y_h in zip(centers, med_tk, med_h):
+    #     ax_fourth.annotate(
+    #         "",
+    #         xy=(x_i, y_h),
+    #         xytext=(x_i, y_tk),
+    #         arrowprops=dict(arrowstyle="->", color="0.35", linewidth=1.0, alpha=0.9),
+    #         zorder=2,
+    #     )
 
-    ax_fourth.plot(centers, med_h, "o", color="#1b9e77", markersize=4, label=r"median($w_H$)")
-    ax_fourth.plot(centers, med_tk, "o", color="#d95f02", markersize=4, label=r"median($w_{TK}$)")
-    ax_fourth.set_xscale("log")
-    ax_fourth.set_xlabel("Window length bin (bp)")
-    ax_fourth.set_ylabel("Matching weight")
-    ax_fourth.set_title(rf"Matching weight median by length bucket in {detail_sample_id} ($\geq$50bp, 32x)")
-    ax_fourth.grid(True, which="major", color=right_grid_color, linewidth=0.8)
-    ax_fourth.legend(loc="best")
+    # ax_fourth.plot(centers, med_h, "o", color="#1b9e77", markersize=4, label=r"median($w_H$)")
+    # ax_fourth.plot(centers, med_tk, "o", color="#d95f02", markersize=4, label=r"median($w_{TK}$)")
+    # ax_fourth.set_xscale("log")
+    # ax_fourth.set_xlabel("Window length bin (bp)")
+    # ax_fourth.set_ylabel("Matching weight")
+    # ax_fourth.set_title(rf"Matching weight median by length bucket in {detail_sample_id} ($\geq$50bp, 32x)")
+    # ax_fourth.grid(True, which="major", color=right_grid_color, linewidth=0.8)
+    # ax_fourth.legend(loc="best")
 
-    fig.tight_layout()
+    fig.tight_layout(pad=0.15, w_pad=0.3)
+    fig.subplots_adjust(left=0.04, right=0.995, bottom=0.11, top=0.93, wspace=0.12)
     plt.show()
 
 
