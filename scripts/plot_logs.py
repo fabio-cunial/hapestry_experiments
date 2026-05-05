@@ -3,6 +3,7 @@ from collections import defaultdict
 from math import log10
 import math
 import os
+import re
 import matplotlib
 from matplotlib import pyplot
 from matplotlib.colors import LogNorm
@@ -335,7 +336,8 @@ def plot_window_runtime_distribution_histogram(times, task="window_total", bins=
     ax.set_yscale("log")
     ax.set_xscale("log")
     ax.set_box_aspect(1)
-    ax.set_title(f"Window runtimes in {int(run_name[1:])} samples")
+    last_run_name = list(run_values.keys())[-1] if run_values else ""
+    ax.set_title(f"Window runtimes in {int(last_run_name[1:])} samples" if last_run_name else "Window runtimes")
     ax.grid(True, color='lightgray', linestyle='-', linewidth=0.5)
     ax.legend(loc='upper right')
     if show:
@@ -493,19 +495,93 @@ def plot_failed_windows(total, failed_graphaligner, failed_optimize_d_plus_n, fa
 
 
 
+def extract_optimize_d_plus_n_data(file_path):
+    with open(file_path, 'r') as file:
+        for line in file:
+            if line.startswith("optimize_d_plus_n"):
+                parts = line.strip().split(',')
+                h, m, s, ms = map(int, parts[1:5])
+                time_in_seconds = h * 3600 + m * 60 + s + ms / 1000
+                match = re.search(r'n_edges=(\d+)', parts[6])
+                if match:
+                    return time_in_seconds, int(match.group(1))
+    return None
+
+
+
+
+def collect_optimize_d_plus_n_data(input_dir):
+    times = []
+    n_edges = []
+    log_files = []
+    for entry in sorted(os.scandir(input_dir+'/run'), key=lambda item: item.name):
+        if not entry.is_dir():
+            continue
+        log_file = os.path.join(entry.path, 'log.csv')
+        if not os.path.isfile(log_file):
+            continue
+        log_files.append(log_file)
+        record = extract_optimize_d_plus_n_data(log_file)
+        if record is None:
+            continue
+        time_in_seconds, edge_count = record
+        times.append(time_in_seconds)
+        n_edges.append(edge_count)
+    return times, n_edges, log_files
+
+
+
+
+def plot_time_vs_n_edges_heatmap(times, n_edges, max_n_edges=16000, max_time=1, ax=None, show=True):
+    filtered_times = []
+    filtered_n_edges = []
+    for t, e in zip(times, n_edges):
+        if 0 <= e <= max_n_edges and 0 <= t <= max_time:
+            filtered_times.append(t)
+            filtered_n_edges.append(e)
+    if ax is None:
+        fig, ax = pyplot.subplots(figsize=(10, 10))
+    ax.set_title('Runtime of optimize_d_plus_n on 1024 samples')
+    ax.set_xlabel('Number of edges')
+    ax.set_ylabel('Seconds')
+    ax.set_xlim(0, max_n_edges)
+    ax.set_ylim(0, max_time)
+    ax.grid()
+    ax.set_box_aspect(1)
+    if len(filtered_times) == 0:
+        if show:
+            pyplot.show()
+        return
+    cmap = matplotlib.colormaps['viridis'].copy()
+    cmap.set_under('white')
+    _, _, _, image = ax.hist2d(
+        filtered_n_edges,
+        filtered_times,
+        bins=(250, 250),
+        cmap=cmap,
+        cmin=1,
+        norm=LogNorm(),
+    )
+    #pyplot.colorbar(image, ax=ax, label='Number of windows')
+    if show:
+        pyplot.show()
+
+
+
+
 def main():
     # Input directories
-    n0001 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/logs/n0001/tmp.4yhJQ1/tmp.LI4dRERe8f/output" ]
-    n0002 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/logs/n0002/tmp.lzEWtV/tmp.RvGaXcDD9p/output" ]
-    n0004 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/logs/n0004/tmp.2OGV9S/tmp.FxI82dHKTs/output" ] 
-    n0008 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/logs/n0008/tmp.DXG5WY/tmp.colQIV7d31/output" ]
-    n0016 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/logs/n0016/tmp.mWYem8/tmp.7U9bHvVnxo/output" ]
-    n0032 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/logs/n0032/tmp.pyTad9/tmp.k4r789DL4D/output" ]
-    n0064 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/logs/n0064/tmp.iUCVjm/tmp.PbpK9Shgtk/output" ]
-    n0128 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/logs/n0128/tmp.d20J8O/tmp.dGKvM8WJR1/output" ]
-    n0256 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/logs/n0256/tmp.7eVuZ0/tmp.BMOrl3n6dm/output" ]
-    n0512 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/logs/n0512/tmp.62Jaof/tmp.s6v8nb8xU4/output" ]
-    n1024 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/logs/n1024/tmp.w2HIMS/tmp.d2QV32P002/output" ]
+    n0001 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/runtime_logs/n0001/tmp.4yhJQ1/tmp.LI4dRERe8f/output" ]
+    n0002 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/runtime_logs/n0002/tmp.lzEWtV/tmp.RvGaXcDD9p/output" ]
+    n0004 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/runtime_logs/n0004/tmp.2OGV9S/tmp.FxI82dHKTs/output" ] 
+    n0008 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/runtime_logs/n0008/tmp.DXG5WY/tmp.colQIV7d31/output" ]
+    n0016 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/runtime_logs/n0016/tmp.mWYem8/tmp.7U9bHvVnxo/output" ]
+    n0032 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/runtime_logs/n0032/tmp.pyTad9/tmp.k4r789DL4D/output" ]
+    n0064 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/runtime_logs/n0064/tmp.iUCVjm/tmp.PbpK9Shgtk/output" ]
+    n0128 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/runtime_logs/n0128/tmp.d20J8O/tmp.dGKvM8WJR1/output" ]
+    n0256 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/runtime_logs/n0256/tmp.7eVuZ0/tmp.BMOrl3n6dm/output" ]
+    n0512 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/runtime_logs/n0512/tmp.62Jaof/tmp.s6v8nb8xU4/output" ]
+    n1024 = [ "/Users/fcunial/Downloads/HAPESTRY/experimental_section_3/runtime_logs/n1024/tmp.w2HIMS/tmp.d2QV32P002/output" ]
 
     # Loading data used in Plots 1 and 2.
     # Remark: `times[name][task]` contains every window with `task` in its log,
@@ -585,7 +661,20 @@ def main():
     plot_window_runtime_distribution_histogram(times, "optimize_d_plus_n", ax=axes[1, 0], show=False)
     #plot_window_runtime_distribution_histogram(times,"align_reads_to_paths")
     
-    # 4. Failed windows
+    # 4. Optimizer runtimes
+    # times, n_edges, log_files = collect_optimize_d_plus_n_data(n0032[0])
+    times, n_edges, log_files = collect_optimize_d_plus_n_data(n1024[0])
+    plot_time_vs_n_edges_heatmap(times, n_edges, ax=axes[1, 1])
+
+    fig.tight_layout()
+    pyplot.show()
+    pyplot.close(fig)
+
+
+
+
+    # Separate figure: failed windows.
+    fig, ax = pyplot.subplots(figsize=(6, 6))
     out_total = defaultdict(int)
     out_failed_graphaligner = defaultdict(int)
     out_failed_optimize_d_plus_n = defaultdict(int)
@@ -601,11 +690,13 @@ def main():
     get_failed_windows(n0256, 256, out_total, out_failed_graphaligner, out_failed_optimize_d_plus_n, out_failed_other)
     get_failed_windows(n0512, 512, out_total, out_failed_graphaligner, out_failed_optimize_d_plus_n, out_failed_other)
     get_failed_windows(n1024, 1024, out_total, out_failed_graphaligner, out_failed_optimize_d_plus_n, out_failed_other)
-    plot_failed_windows(out_total, out_failed_graphaligner, out_failed_optimize_d_plus_n, out_failed_other, ax=axes[1, 1], show=False)
+    plot_failed_windows(out_total, out_failed_graphaligner, out_failed_optimize_d_plus_n, out_failed_other, ax=ax, show=False)
 
     fig.tight_layout()
     pyplot.show()
     pyplot.close(fig)
+
+    
 
 
 
